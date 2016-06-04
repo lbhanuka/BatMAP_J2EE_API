@@ -13,7 +13,7 @@ public class Newspost {
 	  
 	  @Path("getfiveposts/{startingNumber}")
 	  //use the link below to test if this works!
-	  //http://localhost:8080/BatMAP/crunchify/newsservice/getfiveposts/1
+	  //http://localhost:8080/BatMAP_J2EE_API/crunchify/newsservice/getfiveposts/1
 	  @GET
 	  @Produces("application/json")
 	  public static Response getFivePosts(@PathParam("startingNumber") int startingNumber) throws JSONException {
