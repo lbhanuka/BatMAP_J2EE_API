@@ -54,7 +54,7 @@ public class User {
 	  public Response getDetails(@PathParam("username") String username) throws JSONException {
 
 		JSONObject jsonObject = new JSONObject();
-		String userDetails = "details fron database";
+		String userDetails = "details from database";
 		jsonObject.put("userDetails", userDetails); 
 
 		String result = "@Produces(\"application/json\") \n\n" + jsonObject;
