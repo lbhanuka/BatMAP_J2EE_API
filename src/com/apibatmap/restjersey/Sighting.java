@@ -25,7 +25,8 @@ public class Sighting {
 	        DBConnection mydb = DBConnection.getDbCon();
         	JSONArray jsonArray = new JSONArray();
 	        if(mydb!=null){
-	            ResultSet rs = mydb.query("SELECT * FROM sighting");
+				String[] parms={};
+	            ResultSet rs = mydb.query("SELECT * FROM sighting",parms);
 	            	while(rs.next()){
 	            		
 	                	JSONObject jsonObject = new JSONObject();

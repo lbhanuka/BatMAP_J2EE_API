@@ -1,18 +1,14 @@
 package com.apibatmap.restjersey;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 /**
  * Created by lahiru on 5/17/2016.
  */
-public final class DBConnection {
 
-	public Connection conn;
-    private Statement statement;
+public final class DBConnection {
+    public Connection conn;
+    private PreparedStatement statement;
     public static DBConnection db;
     private DBConnection() {
         String url= "jdbc:mysql://localhost:3306/";
@@ -26,7 +22,6 @@ public final class DBConnection {
         }
         catch (Exception sqle) {
             sqle.printStackTrace();
-
         }
     }
     /**
@@ -39,28 +34,45 @@ public final class DBConnection {
         }
         return db;
     }
+
     /**
      *
      * @param query String The query to be executed
      * @return a ResultSet object containing the results or null if not available
      * @throws SQLException
      */
-    public ResultSet query(String query) throws SQLException{
-        statement = db.conn.createStatement();
-        ResultSet res = statement.executeQuery(query);
+
+    public ResultSet query(String query, String[] parms) throws SQLException{
+        statement = db.conn.prepareStatement(query);
+        if(parms.length!=0){
+            for(int i=0;i<parms.length;i++){
+                statement.setString(i+1,parms[i]);
+            }
+        }
+        ResultSet res = statement.executeQuery();
         return res;
     }
+
     /**
      * @desc Method to insert data to a table
      * @param insertQuery String The Insert query
      * @return boolean
      * @throws SQLException
      */
-    public int insert(String insertQuery) throws SQLException {
-        statement = db.conn.createStatement();
-        int result = statement.executeUpdate(insertQuery);
+
+    public int insert(String insertQuery, String[] parms) throws SQLException {
+        statement = db.conn.prepareStatement(insertQuery);
+        if(parms.length!=0){
+            for(int i=0;i<parms.length;i++){
+                statement.setString(i+1,parms[i]);
+            }
+        }
+        int result = statement.executeUpdate();
         return result;
 
     }
 
 }
+
+
+

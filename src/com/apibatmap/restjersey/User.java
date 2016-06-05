@@ -71,7 +71,9 @@ public class User {
 	        DBConnection mydb = DBConnection.getDbCon();
         	JSONObject jsonObject = new JSONObject();
 	        if(mydb!=null){
-	            ResultSet rs = mydb.query("SELECT * FROM user WHERE email = '"+email+"'");
+                String sql = "SELECT * FROM user WHERE email = ?";
+                String [] parms = {email};
+	            ResultSet rs = mydb.query(sql,parms);
 	            if(rs.next()){
 	        		String first_name = rs.getString("first_name");
 	        		String last_name = rs.getString("last_name");
@@ -83,13 +85,13 @@ public class User {
 	        		jsonObject.put("user_email", user_email); 
 	        		jsonObject.put("password", password); 
 	        		jsonObject.put("institute", institute); 
-	        		jsonObject.put("succsess", true); 
+	        		jsonObject.put("success", true);
 
 	            }else {
-	            	jsonObject.put("succsess", false);
+	            	jsonObject.put("success", false);
 	            }
 	        }else{
-            	jsonObject.put("succsess", false);
+            	jsonObject.put("success", false);
 	        }
     	    return Response
     	            .status(200)
@@ -101,5 +103,7 @@ public class User {
     	            .entity(jsonObject.toString())
     	            .build();
 	    }
+
+
 
 }
