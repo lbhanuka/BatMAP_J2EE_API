@@ -141,21 +141,33 @@ public class User {
     @Produces("application/json")
     public Response signup(@FormParam("email") String email,
                          @FormParam("password") String password,
+                         @FormParam("confpassword") String confpassword,
                          @FormParam("first_name") String first_name,
                          @FormParam("last_name") String last_name,
                          @FormParam("institute") String institute
     ) throws SQLException {
-        DBConnection registerDB = DBConnection.getDbCon();
+        DBConnection checkUser = DBConnection.getDbCon();
+        String sql1 = "SELECT * FROM user WHERE email = ?";
+        String parms1[] = {email};
+        ResultSet rs1 = checkUser.query(sql1, parms1);
         JSONObject jsonObject = new JSONObject();
-        String sql2 = "INSERT INTO user(email,password,first_name,last_name,institute) VALUES (?,?,?,?,?)";
-        String[] parms = {email,password,first_name,last_name,institute};
-        int rs = registerDB.insert(sql2, parms);
-        if(rs==0){
-            jsonObject.put("success", false);
-        }else  if (rs>0){
-            jsonObject.put("success", true);
-        }
+        if(rs1.next()){
+            jsonObject.put("userExists", true);
+        }else if(password.trim().equals(confpassword.trim())) {
+            jsonObject.put("userExists", false);
+            DBConnection registerDB = DBConnection.getDbCon();
+            String sql2 = "INSERT INTO user(email,password,first_name,last_name,institute) VALUES (?,?,?,?,?)";
+            String[] parms2 = {email,password,first_name,last_name,institute};
+            int rs2 = registerDB.insert(sql2, parms2);
+            if(rs2==0){
+                jsonObject.put("signup", false);
+            }else  if (rs2>0){
+                jsonObject.put("signup", true);
+            }
 
+        }else {
+            jsonObject.put("passwordNotEquals",true);
+        }
         return Response
                 .status(200)
                 .header("Access-Control-Allow-Origin", "*")
@@ -165,6 +177,7 @@ public class User {
                 .header("Access-Control-Max-Age", "1209600")
                 .entity(jsonObject.toString())
                 .build();
+
     }
 
 
