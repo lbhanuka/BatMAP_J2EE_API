@@ -1,13 +1,14 @@
 package com.apibatmap.restjersey;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import com.mysql.jdbc.log.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 //import com.group.db.DBConnection;
+import java.io.Console;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 //import javax.ws.rs.Consumes;
@@ -20,7 +21,7 @@ public class User {
 	  //use the link below to test if this works!
 	  //http://localhost:8080/BatMAP_J2EE_API/userservice/test
 	  @GET
-	  @Produces("application/json; charset=UTF-8")
+	  @Produces("application/json")
 	  public String testMethode() throws JSONException {
 
 		JSONObject jsonObject = new JSONObject();
@@ -50,7 +51,7 @@ public class User {
 
 	  @Path("getdetails/{username}")
 	  @GET
-	  @Produces("application/json; charset=UTF-8")
+	  @Produces("application/json")
 	  public Response getDetails(@PathParam("username") String username) throws JSONException {
 
 		JSONObject jsonObject = new JSONObject();
@@ -66,7 +67,7 @@ public class User {
 	  //use the link below to test if this works!
 	  //http://localhost:8080/BatMAP_J2EE_API/userservice/test1
 	  @GET
-	  @Produces("application/json; charset=UTF-8")
+	  @Produces("application/json")
 	  public Response getUser(@PathParam("email") String email) throws ClassNotFoundException, SQLException, JSONException{
 	        DBConnection mydb = DBConnection.getDbCon();
         	JSONObject jsonObject = new JSONObject();
@@ -104,6 +105,67 @@ public class User {
     	            .build();
 	    }
 
+
+    @POST
+    @Path("/signin")
+    @Consumes("application/x-www-form-urlencoded")
+    @Produces("application/json")
+    public Response signin(@FormParam("email") String email,
+                           @FormParam("password") String password
+    ) throws SQLException {
+        DBConnection registerDB = DBConnection.getDbCon();
+        JSONObject jsonObject = new JSONObject();
+        String sql2 = "SELECT * FROM user WHERE email = ? AND password = ?";
+        String[] parms = {email,password};
+        ResultSet rs = registerDB.query(sql2, parms);
+        if(rs.next()){
+            jsonObject.put("success", true);
+        }else {
+            jsonObject.put("success", false);
+        }
+
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .entity(jsonObject.toString())
+                .build();
+    }
+
+    @POST
+    @Path("/signup")
+    @Consumes("application/x-www-form-urlencoded")
+    @Produces("application/json")
+    public Response signup(@FormParam("email") String email,
+                         @FormParam("password") String password,
+                         @FormParam("first_name") String first_name,
+                         @FormParam("last_name") String last_name,
+                         @FormParam("institute") String institute
+    ) throws SQLException {
+        DBConnection registerDB = DBConnection.getDbCon();
+        JSONObject jsonObject = new JSONObject();
+        String sql2 = "INSERT INTO user(email,password,first_name,last_name,institute) VALUES (?,?,?,?,?)";
+        String[] parms = {email,password,first_name,last_name,institute};
+        int rs = registerDB.insert(sql2, parms);
+        if(rs==0){
+            jsonObject.put("success", false);
+        }else  if (rs>0){
+            jsonObject.put("success", true);
+        }
+
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .entity(jsonObject.toString())
+                .build();
+    }
 
 
 }
