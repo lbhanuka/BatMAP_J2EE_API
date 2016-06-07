@@ -1,17 +1,14 @@
 package com.apibatmap.restjersey;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.mysql.jdbc.log.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
-//import com.group.db.DBConnection;
-import java.io.Console;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
-//import javax.ws.rs.Consumes;
+
 
 
 @Path("/userservice")
@@ -69,32 +66,29 @@ public class User {
 	  @GET
 	  @Produces("application/json")
 	  public Response getUser(@PathParam("email") String email) throws ClassNotFoundException, SQLException, JSONException{
-	        DBConnection mydb = DBConnection.getDbCon();
-        	JSONObject jsonObject = new JSONObject();
-	        if(mydb!=null){
-                String sql = "SELECT * FROM user WHERE email = ?";
-                String [] parms = {email};
-	            ResultSet rs = mydb.query(sql,parms);
-	            if(rs.next()){
-	        		String first_name = rs.getString("first_name");
-	        		String last_name = rs.getString("last_name");
-	        		String user_email = rs.getString("email");
-	        		String password = rs.getString("password");
-	        		String institute = rs.getString("institute");
-	        		jsonObject.put("first_name", first_name); 
-	        		jsonObject.put("last_name", last_name); 
-	        		jsonObject.put("user_email", user_email); 
-	        		jsonObject.put("password", password); 
-	        		jsonObject.put("institute", institute); 
-	        		jsonObject.put("success", true);
+          DBConnection mydb = new DBConnection();
+          JSONObject jsonObject = new JSONObject();
 
-	            }else {
-	            	jsonObject.put("success", false);
-	            }
-	        }else{
-            	jsonObject.put("success", false);
-	        }
-    	    return Response
+          String sql = "SELECT * FROM user WHERE email = ?";
+          String [] parms = {email};
+          ResultSet rs = mydb.query(sql,parms);
+          if(rs.next()){
+              String first_name = rs.getString("first_name");
+              String last_name = rs.getString("last_name");
+              String user_email = rs.getString("email");
+              String password = rs.getString("password");
+              String institute = rs.getString("institute");
+              jsonObject.put("first_name", first_name);
+              jsonObject.put("last_name", last_name);
+              jsonObject.put("user_email", user_email);
+              jsonObject.put("password", password);
+              jsonObject.put("institute", institute);
+              jsonObject.put("success", true);
+          }else {
+              jsonObject.put("success", false);
+          }
+
+          return Response
     	            .status(200)
     	            .header("Access-Control-Allow-Origin", "*")
     	            .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
@@ -106,22 +100,35 @@ public class User {
 	    }
 
 
+
+    /**
+     * Sigin in functionality
+     * @param st
+     * @return
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     */
+
+
+
     @POST
     @Path("/signin")
-    @Consumes("application/x-www-form-urlencoded")
+    @Consumes("application/json")
     @Produces("application/json")
-    public Response signin(@FormParam("email") String email,
-                           @FormParam("password") String password
-    ) throws SQLException {
-        DBConnection registerDB = DBConnection.getDbCon();
+    public Response signin(String st) throws SQLException, ClassNotFoundException {
+        System.out.println("sign in request received");
+        JSONObject jsonReq = new JSONObject(st);
+        String email = jsonReq.getString("email");
+        String password = jsonReq.getString("password");
         JSONObject jsonObject = new JSONObject();
+        DBConnection logindb = new DBConnection();
         String sql2 = "SELECT * FROM user WHERE email = ? AND password = ?";
         String[] parms = {email,password};
-        ResultSet rs = registerDB.query(sql2, parms);
+        ResultSet rs = logindb.query(sql2,parms);
         if(rs.next()){
-            jsonObject.put("success", true);
+            jsonObject.put("signin", true);
         }else {
-            jsonObject.put("success", false);
+            jsonObject.put("signin", false);
         }
 
         return Response
@@ -135,18 +142,45 @@ public class User {
                 .build();
     }
 
+    @OPTIONS
+    @Path("/signin")
+    @Consumes("*/*")
+    public Response signinPre(){
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, authorization, Content-Type, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5,  Date, X-Api-Version, X-File-Name")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .build();
+    }
+
+
+    /**
+     * Signup functionality
+     * @param st
+     * @return
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     */
+
     @POST
     @Path("/signup")
     @Consumes("application/x-www-form-urlencoded")
     @Produces("application/json")
-    public Response signup(@FormParam("email") String email,
-                         @FormParam("password") String password,
-                         @FormParam("confpassword") String confpassword,
-                         @FormParam("first_name") String first_name,
-                         @FormParam("last_name") String last_name,
-                         @FormParam("institute") String institute
-    ) throws SQLException {
-        DBConnection checkUser = DBConnection.getDbCon();
+    public Response signup(String st) throws SQLException, ClassNotFoundException {
+        System.out.println("sign up request received");
+
+        JSONObject jsonReq = new JSONObject(st);
+        String email = jsonReq.getString("email");
+        String password = jsonReq.getString("password");
+        String confpassword = jsonReq.getString("confpassword");
+        String first_name = jsonReq.getString("first_name");
+        String last_name = jsonReq.getString("last_name");
+        String institute = jsonReq.getString("institute");
+
+        DBConnection checkUser = new DBConnection();
         String sql1 = "SELECT * FROM user WHERE email = ?";
         String parms1[] = {email};
         ResultSet rs1 = checkUser.query(sql1, parms1);
@@ -155,7 +189,7 @@ public class User {
             jsonObject.put("userExists", true);
         }else if(password.trim().equals(confpassword.trim())) {
             jsonObject.put("userExists", false);
-            DBConnection registerDB = DBConnection.getDbCon();
+            DBConnection registerDB = new DBConnection();
             String sql2 = "INSERT INTO user(email,password,first_name,last_name,institute) VALUES (?,?,?,?,?)";
             String[] parms2 = {email,password,first_name,last_name,institute};
             int rs2 = registerDB.insert(sql2, parms2);
@@ -178,6 +212,88 @@ public class User {
                 .entity(jsonObject.toString())
                 .build();
 
+    }
+
+    @OPTIONS
+    @Path("/signup")
+    @Consumes("*/*")
+    public Response signupPre(){
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, authorization, Content-Type, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5,  Date, X-Api-Version, X-File-Name")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .build();
+    }
+
+    @POST
+    @Path("/update")
+    @Consumes("application/x-www-form-urlencoded")
+    @Produces("application/json")
+    public Response updateUser(){
+        JSONObject jsonObject = new JSONObject();
+
+        String sql = "UPDATE user SET ";
+        String[] parms = {};
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .entity(jsonObject.toString())
+                .build();
+    }
+
+    @POST
+    @Path("/delete")
+    @Consumes("application/x-www-form-urlencoded")
+    @Produces("application/json")
+    public void deleteUser(){
+
+    }
+
+    @POST
+    @Path("/post")
+    @Consumes("application/json")
+    @Produces("application/json")
+    public Response test(String st) {
+
+        JSONObject jsonreq = new JSONObject(st);
+        JSONObject jsonObject = new JSONObject();
+        System.out.println("accessed");
+        jsonObject.put("access", "ok");
+        jsonObject.put("namefromreq", jsonreq.getString("name"));
+        jsonObject.put("pwfromreq", jsonreq.getInt("password"));
+
+
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .entity(jsonObject.toString())
+                .build();
+
+    }
+
+    @OPTIONS
+    @Path("/post")
+    @Consumes("*/*")
+    public Response responseForPreflight(){
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, authorization, Content-Type, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5,  Date, X-Api-Version, X-File-Name")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .build();
     }
 
 

@@ -20,35 +20,35 @@ public class Sighting {
 	  //use the link below to test if this works!
 	  //http://localhost:8080/BatMAP_J2EE_API/userservice/test1
 	  @GET
-	  @Produces("application/json; charset=UTF-8")
+	  @Produces("application/json")
 	  public Response getUser() throws ClassNotFoundException, SQLException, JSONException{
-	        DBConnection mydb = DBConnection.getDbCon();
+	        DBConnection mydb = new DBConnection();
         	JSONArray jsonArray = new JSONArray();
 	        if(mydb!=null){
 				String[] parms={};
 	            ResultSet rs = mydb.query("SELECT * FROM sighting",parms);
 	            	while(rs.next()){
-	            		
+
 	                	JSONObject jsonObject = new JSONObject();
-	                	
+
 		        		String sighting_id = rs.getString("sighting_id");
 		        		String user_id = rs.getString("user_id");
 		        		float longitude = rs.getFloat("longitude");
 		        		float latitude = rs.getFloat("latitude");
 		        		String species_id = rs.getString("species_id");
 		        		String count = rs.getString("count");
-		        		jsonObject.put("sighting_id", sighting_id); 
-		        		jsonObject.put("user_id", user_id); 
-		        		jsonObject.put("longitude", longitude); 
-		        		jsonObject.put("latitude", latitude); 
-		        		jsonObject.put("species_id", species_id); 
-		        		jsonObject.put("count", count); 
-		        		jsonObject.put("succsess", true); 
-		        		
+		        		jsonObject.put("sighting_id", sighting_id);
+		        		jsonObject.put("user_id", user_id);
+		        		jsonObject.put("longitude", longitude);
+		        		jsonObject.put("latitude", latitude);
+		        		jsonObject.put("species_id", species_id);
+		        		jsonObject.put("count", count);
+		        		jsonObject.put("succsess", true);
+
 		        		jsonArray.put(jsonObject);
 	            	};
 
-	        		
+
 	        }else{
             	JSONObject jsonObject = new JSONObject();
             	jsonObject.put("succsess", false);
