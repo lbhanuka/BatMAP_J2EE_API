@@ -58,7 +58,15 @@ public class User {
 		String result = "@Produces(\"application/json\") \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	  }
-	  
+
+    /**
+     * get user details using email functionality
+     * @param email
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws JSONException
+     */
 
 	  @Path("/getuser/{email}")
 	  //use the link below to test if this works!
@@ -78,14 +86,16 @@ public class User {
               String user_email = rs.getString("email");
               String password = rs.getString("password");
               String institute = rs.getString("institute");
+              String user_type = rs.getString("user_type");
               jsonObject.put("first_name", first_name);
               jsonObject.put("last_name", last_name);
-              jsonObject.put("user_email", user_email);
+              jsonObject.put("email", user_email);
               jsonObject.put("password", password);
               jsonObject.put("institute", institute);
-              jsonObject.put("success", true);
+              jsonObject.put("user_type", user_type);
+              jsonObject.put("getdetails", true);
           }else {
-              jsonObject.put("success", false);
+              jsonObject.put("getdetails", false);
           }
 
           return Response
@@ -126,6 +136,8 @@ public class User {
         String[] parms = {email,password};
         ResultSet rs = logindb.query(sql2,parms);
         if(rs.next()){
+            jsonObject.put("email",rs.getString("email"));
+            jsonObject.put("user_type",rs.getString("user_type"));
             jsonObject.put("signin", true);
         }else {
             jsonObject.put("signin", false);
@@ -179,6 +191,7 @@ public class User {
         String first_name = jsonReq.getString("first_name");
         String last_name = jsonReq.getString("last_name");
         String institute = jsonReq.getString("institute");
+        String user_type = "researcher";
 
         DBConnection checkUser = new DBConnection();
         String sql1 = "SELECT * FROM user WHERE email = ?";
@@ -190,8 +203,8 @@ public class User {
         }else if(password.trim().equals(confpassword.trim())) {
             jsonObject.put("userExists", false);
             DBConnection registerDB = new DBConnection();
-            String sql2 = "INSERT INTO user(email,password,first_name,last_name,institute) VALUES (?,?,?,?,?)";
-            String[] parms2 = {email,password,first_name,last_name,institute};
+            String sql2 = "INSERT INTO user(email,password,first_name,last_name,institute,user_type) VALUES (?,?,?,?,?,?)";
+            String[] parms2 = {email,password,first_name,last_name,institute,user_type};
             int rs2 = registerDB.insert(sql2, parms2);
             if(rs2==0){
                 jsonObject.put("signup", false);
@@ -229,15 +242,42 @@ public class User {
                 .build();
     }
 
-    @POST
-    @Path("/update")
-    @Consumes("application/x-www-form-urlencoded")
-    @Produces("application/json")
-    public Response updateUser(){
-        JSONObject jsonObject = new JSONObject();
+    /**
+     * update profile details
+     * @return
+     */
 
-        String sql = "UPDATE user SET ";
-        String[] parms = {};
+    @POST
+    @Path("/updateprofile")
+    @Consumes("application/json")
+    @Produces("application/json")
+    public Response updateProfile(String st) throws SQLException, ClassNotFoundException {
+        System.out.println("update profile request received");
+        JSONObject jsonObject = new JSONObject();
+        JSONObject jsonReq = new JSONObject(st);
+        String email = jsonReq.getString("email");
+        String password = jsonReq.getString("password");
+        String confpassword = jsonReq.getString("confirmpassword");
+        String first_name = jsonReq.getString("first_name");
+        String last_name = jsonReq.getString("last_name");
+        String institute = jsonReq.getString("institute");
+
+        if(password.trim().equals(confpassword.trim())){
+            String sql = "UPDATE user SET password = ?, first_name = ?, last_name = ?, institute = ? WHERE email = ? ";
+            String[] parms = {password,first_name,last_name,institute,email};
+            DBConnection updateUsr = new DBConnection();
+            int rs = updateUsr.update(sql, parms);
+            if(rs>0){
+                jsonObject.put("updated",true);
+            }else if(rs==0) {
+                jsonObject.put("updated",false);
+            }
+        }else {
+            jsonObject.put("passwordNtEquals",true);
+            jsonObject.put("updated",false);
+        }
+
+
         return Response
                 .status(200)
                 .header("Access-Control-Allow-Origin", "*")
@@ -248,6 +288,24 @@ public class User {
                 .entity(jsonObject.toString())
                 .build();
     }
+
+    @OPTIONS
+    @Path("/updateprofile")
+    @Consumes("*/*")
+    public Response updateProfilePre(){
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, authorization, Content-Type, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5,  Date, X-Api-Version, X-File-Name")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .build();
+    }
+
+
+
+
 
     @POST
     @Path("/delete")

@@ -20,7 +20,7 @@ public class DBConnection {
         this.dbName = "batmap";
         this.driver = "com.mysql.jdbc.Driver";
         this.username = "root";
-        this.password = "1110";
+        this.password = "";
 
     }
 
