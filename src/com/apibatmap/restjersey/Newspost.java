@@ -32,7 +32,6 @@ public class Newspost {
 		return Response.status(200).entity(result).build();
 	  }
 	  @Path("/gettennews")
-	  //use the link below to test if this works!
 	  //http://localhost:8080/BatMAP_J2EE_API/newsservice/gettennews
 	  @GET
 	  @Produces("application/json")
@@ -41,7 +40,7 @@ public class Newspost {
         	JSONArray jsonArray = new JSONArray();
 	        if(mydb!=null){
 				String[] parms={};
-	            ResultSet rs = mydb.query("SELECT news_post.news_post_id, news_post.user_id, news_post.header, news_post.content, news_post.time, user.first_name, user.last_name FROM news_post INNER JOIN user ON news_post.user_id=user.user_id ORDER BY news_post_id DESC LIMIT 10",parms);
+	            ResultSet rs = mydb.query("SELECT news_post.news_post_id, news_post.user_id, news_post.header, news_post.content, news_post.time, user.first_name, user.last_name FROM news_post INNER JOIN user ON news_post.user_id=user.user_id ORDER BY news_post_id DESC LIMIT 15",parms);
 	            	while(rs.next()){
 
 	                	JSONObject jsonObject = new JSONObject();
@@ -79,7 +78,7 @@ public class Newspost {
     	            .header("Access-Control-Allow-Credentials", "true")
     	            .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
     	            .header("Access-Control-Max-Age", "1209600")
-    	            .entity("{\"tennews\":"+jsonArray+"}")
+    	            .entity("{\"news\":"+jsonArray+"}")
     	            .build();
 	    }
 
