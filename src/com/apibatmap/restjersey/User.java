@@ -167,7 +167,7 @@ public class User {
 
     @POST
     @Path("/signup")
-    @Consumes("application/x-www-form-urlencoded")
+    @Consumes("application/json")
     @Produces("application/json")
     public Response signup(String st) throws SQLException, ClassNotFoundException {
         System.out.println("sign up request received");
@@ -175,7 +175,7 @@ public class User {
         JSONObject jsonReq = new JSONObject(st);
         String email = jsonReq.getString("email");
         String password = jsonReq.getString("password");
-        String confpassword = jsonReq.getString("confpassword");
+        String confpassword = jsonReq.getString("confirmpassword");
         String first_name = jsonReq.getString("first_name");
         String last_name = jsonReq.getString("last_name");
         String institute = jsonReq.getString("institute");
@@ -201,6 +201,7 @@ public class User {
 
         }else {
             jsonObject.put("passwordNotEquals",true);
+            jsonObject.put("signup", false);
         }
         return Response
                 .status(200)
