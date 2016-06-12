@@ -62,7 +62,8 @@ public class DBConnection {
 
     }
 
-    public int update(String updateQuery, String[] parms) throws SQLException {
+    public int update(String updateQuery, String[] parms) throws SQLException, ClassNotFoundException {
+        getDbConnection();
         PreparedStatement statement = connection.prepareStatement(updateQuery);
         if(parms.length!=0){
             for(int i=0;i<parms.length;i++){
