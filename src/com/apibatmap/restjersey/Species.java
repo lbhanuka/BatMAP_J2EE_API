@@ -21,7 +21,7 @@ public class Species {
 	  @GET
 	  @Produces("application/json; charset=UTF-8")
 	  public Response getAllSpecies() throws ClassNotFoundException, SQLException, JSONException{
-	    DBConnection mydb = DBConnection.getDbCon();
+        DBConnection mydb = new DBConnection();
       	JSONArray jsonArray = new JSONArray();
 	        if(mydb!=null){
 	        	String sql = "SELECT species_id, species_name FROM species;";

@@ -26,7 +26,7 @@ public class Sighting {
 	  @GET
 	  @Produces("application/json; charset=UTF-8")
 	  public Response getUser() throws ClassNotFoundException, SQLException, JSONException{
-	        DBConnection mydb = DBConnection.getDbCon();
+          DBConnection mydb = new DBConnection();
         	JSONArray jsonArray = new JSONArray();
 	        if(mydb!=null){
 	        	String sql = "SELECT sighting_id, sighting.user_id, first_name, last_name, institute, longitude, latitude, sighting.species_id, species_name, colour_code, count, approval, date, time, sighting.location_id, location FROM sighting INNER JOIN user ON sighting.user_id=user.user_id INNER JOIN species ON sighting.species_id=species.species_id INNER JOIN sighting_location ON sighting.location_id=sighting_location.location_id;";
@@ -116,7 +116,7 @@ public class Sighting {
 			String species_id = "";
 			String location_id = "";
 			
-	        DBConnection mydb = DBConnection.getDbCon();
+	        DBConnection mydb = new DBConnection();
         	String sql = "SELECT * FROM species WHERE species_name = ?";
         	String para1 = newSighting.getString("species");
             String[] parms = {para1};
@@ -176,7 +176,7 @@ public class Sighting {
 		  public String testMethode() throws ClassNotFoundException, SQLException, JSONException {
 
 				String result = "INIT";
-		        DBConnection mydb = DBConnection.getDbCon();
+		        DBConnection mydb = new DBConnection();
 	        	String sql1 = "SELECT * FROM sighting_location WHERE location = ?";
 	            String[] parms2 = {"Other"};
 	            ResultSet rs3 = mydb.query(sql1,parms2);
