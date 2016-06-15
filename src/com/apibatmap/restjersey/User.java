@@ -138,11 +138,19 @@ public class User {
         if(rs.next()){
             jsonObject.put("email",rs.getString("email"));
             jsonObject.put("user_type",rs.getString("user_type"));
-            jsonObject.put("signin", true);
+            jsonObject.put("acc_status",rs.getString("acc_status"));
+            if(rs.getString("acc_status").equals("active")){
+                jsonObject.put("signin", true);
+            }else if(rs.getString("acc_status").equals("pending")){
+                jsonObject.put("signin", false);
+                jsonObject.put("status", "pending");
+            }else if(rs.getString("acc_status").equals("deactivated")){
+                jsonObject.put("signin", false);
+                jsonObject.put("status", "deactivated");
+            }
         }else {
             jsonObject.put("signin", false);
         }
-
         return Response
                 .status(200)
                 .header("Access-Control-Allow-Origin", "*")
@@ -192,6 +200,7 @@ public class User {
         String last_name = jsonReq.getString("last_name");
         String institute = jsonReq.getString("institute");
         String user_type = "researcher";
+        String acc_status = "pending";
 
         DBConnection checkUser = new DBConnection();
         String sql1 = "SELECT * FROM user WHERE email = ?";
@@ -203,8 +212,8 @@ public class User {
         }else if(password.trim().equals(confpassword.trim())) {
             jsonObject.put("userExists", false);
             DBConnection registerDB = new DBConnection();
-            String sql2 = "INSERT INTO user(email,password,first_name,last_name,institute,user_type) VALUES (?,?,?,?,?,?)";
-            String[] parms2 = {email,password,first_name,last_name,institute,user_type};
+            String sql2 = "INSERT INTO user(email,password,first_name,last_name,institute,user_type,acc_status) VALUES (?,?,?,?,?,?,?)";
+            String[] parms2 = {email,password,first_name,last_name,institute,user_type,acc_status};
             int rs2 = registerDB.insert(sql2, parms2);
             if(rs2==0){
                 jsonObject.put("signup", false);
