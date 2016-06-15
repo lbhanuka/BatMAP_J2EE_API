@@ -3,12 +3,17 @@ package com.apibatmap.restjersey;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
+import com.apibatmap.restjersey.dao.UserDao;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @Path("/userservice")
@@ -262,31 +267,18 @@ public class User {
     @Produces("application/json")
     public Response updateProfile(String st) throws SQLException, ClassNotFoundException {
         System.out.println("update profile request received");
-        JSONObject jsonObject = new JSONObject();
         JSONObject jsonReq = new JSONObject(st);
-        String email = jsonReq.getString("email");
         String password = jsonReq.getString("password");
         String confpassword = jsonReq.getString("confirmpassword");
-        String first_name = jsonReq.getString("first_name");
-        String last_name = jsonReq.getString("last_name");
-        String institute = jsonReq.getString("institute");
-
+        JSONObject jsonObject;
         if(password.trim().equals(confpassword.trim())){
-            String sql = "UPDATE user SET password = ?, first_name = ?, last_name = ?, institute = ? WHERE email = ? ";
-            String[] parms = {password,first_name,last_name,institute,email};
-            DBConnection updateUsr = new DBConnection();
-            int rs = updateUsr.update(sql, parms);
-            if(rs>0){
-                jsonObject.put("updated",true);
-            }else if(rs==0) {
-                jsonObject.put("updated",false);
-            }
+            UserDao ud = new UserDao();
+            jsonObject = ud.updateProfile(jsonReq);
         }else {
+            jsonObject = new JSONObject();
             jsonObject.put("passwordNtEquals",true);
             jsonObject.put("updated",false);
         }
-
-
         return Response
                 .status(200)
                 .header("Access-Control-Allow-Origin", "*")
@@ -312,9 +304,38 @@ public class User {
                 .build();
     }
 
+    /**
+     * get pending signup accounts list - admin
+     * @return
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     */
 
+    @Path("/getpendinglist")
+    @GET
+    @Produces("application/json")
+    public Response getPendingAcc() throws SQLException, ClassNotFoundException {
+        UserDao ud = new UserDao();
+        JSONObject jsonObject = ud.getPendingList();
+        if(jsonObject.getJSONArray("pendingList").length()==0){
+            jsonObject.put("pending",false);
+        }else {
+            jsonObject.put("pending",true);
+        }
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .entity(jsonObject.toString())
+                .build();
+    }
 
-
+    /**
+     * -------------------------------------------------------------------
+     */
 
     @POST
     @Path("/delete")
