@@ -334,6 +334,48 @@ public class User {
     }
 
     /**
+     * accept signup request
+     * @param st
+     * @return
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     */
+    @POST
+    @Path("/manageaccount")
+    @Consumes("application/json")
+    @Produces("application/json")
+    public Response manageAccount(String st) throws SQLException, ClassNotFoundException {
+        JSONObject jsonReq = new JSONObject(st);
+        UserDao ud = new UserDao();
+        JSONObject jsonObject = ud.manageAccount(jsonReq);
+
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .entity(jsonObject.toString())
+                .build();
+    }
+
+    @OPTIONS
+    @Path("/manageaccount")
+    @Consumes("*/*")
+    public Response acceptSignupReqPre(){
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, authorization, Content-Type, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5,  Date, X-Api-Version, X-File-Name")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .build();
+    }
+
+
+    /**
      * -------------------------------------------------------------------
      */
 

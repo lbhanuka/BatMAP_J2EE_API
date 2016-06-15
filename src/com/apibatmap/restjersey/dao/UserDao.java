@@ -101,5 +101,51 @@ public class UserDao {
         return jsonObject;
     }
 
+    public JSONObject acceptSignupRequest(JSONObject jsonReq) throws SQLException, ClassNotFoundException {
+        JSONObject jsonObject  = new JSONObject();
+        this.email = jsonReq.getString("email");
+        this.acc_status = "active";
+        String sql = "UPDATE user SET acc_status = ? WHERE email = ? ";
+        String[] params = {acc_status,email};
+        DBConnection updateUsr = new DBConnection();
+        int rs = updateUsr.update(sql, params);
+        if(rs == 0){
+            jsonObject.put("accepted",false);
+        }else if(rs>0){
+            jsonObject.put("accepted",true);
+        }
+        return jsonObject;
+    }
+
+    public JSONObject manageAccount(JSONObject jsonReq) throws SQLException, ClassNotFoundException {
+        JSONObject jsonObject = new JSONObject();
+        this.email = jsonReq.getString("email");
+        if(jsonReq.getString("type").trim().equals("act")){
+            this.acc_status = "active";
+            String sql = "UPDATE user SET acc_status = ? WHERE email = ? ";
+            String[] params = {acc_status,email};
+            DBConnection updateUsr = new DBConnection();
+            int rs = updateUsr.update(sql, params);
+            if(rs == 0){
+                jsonObject.put("activated",false);
+            }else if(rs>0){
+                jsonObject.put("activated",true);
+            }
+        }else if(jsonReq.getString("type").trim().equals("deact")){
+            this.acc_status = "deactivated";
+            String sql = "UPDATE user SET acc_status = ? WHERE email = ? ";
+            String[] params = {acc_status,email};
+            DBConnection updateUsr = new DBConnection();
+            int rs = updateUsr.update(sql, params);
+            if(rs == 0){
+                jsonObject.put("deactivated",false);
+            }else if(rs>0){
+                jsonObject.put("deactivated",true);
+            }
+        }
+
+        return jsonObject;
+    }
+
 
 }
