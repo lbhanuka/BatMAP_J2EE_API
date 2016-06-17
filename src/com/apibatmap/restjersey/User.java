@@ -215,6 +215,7 @@ public class User {
         ResultSet rs1 = checkUser.query(sql1, parms1);
         JSONObject jsonObject = new JSONObject();
         if(rs1.next()){
+            jsonObject.put("signup", false);
             jsonObject.put("userExists", true);
         }else if(password.trim().equals(confpassword.trim())) {
             jsonObject.put("userExists", false);
@@ -222,9 +223,9 @@ public class User {
             String sql2 = "INSERT INTO user(email,password,first_name,last_name,institute,user_type,acc_status) VALUES (?,?,?,?,?,?,?)";
             String[] parms2 = {email,password,first_name,last_name,institute,user_type,acc_status};
             int rs2 = registerDB.insert(sql2, parms2);
-            if(rs2==0){
+            if(rs2==0) {
                 jsonObject.put("signup", false);
-            }else  if (rs2>0){
+            }else  if (rs2>0) {
                 jsonObject.put("signup", true);
             }
 
