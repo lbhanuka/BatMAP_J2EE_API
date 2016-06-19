@@ -38,8 +38,14 @@ public class UserDao {
         this.acc_status = null;
     }
 
-    public void getAllByEmail(String email){
+    public void getAllDetailsByEmail(String email){
 
+    }
+
+    public boolean isValidUser(String email,String salt){
+        boolean flag = false;
+
+        return flag;
     }
 
 
@@ -101,6 +107,35 @@ public class UserDao {
         return jsonObject;
     }
 
+    /**
+     * get all account details - admin
+     * @return
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     */
+    public JSONObject getAllAccounts() throws SQLException, ClassNotFoundException {
+        JSONObject jsonObject = new JSONObject();
+        DBConnection getAllAccDB = new DBConnection();
+        String sql = "SELECT * FROM user";
+        String[] params = {};
+        ResultSet rs =  getAllAccDB.query(sql, params);
+        JSONArray allAccountsList = new JSONArray();
+        while (rs.next()){
+            JSONObject row = new JSONObject();
+            row.put("user_id", rs.getString("user_id"));
+            row.put("email",rs.getString("email"));
+            row.put("password",rs.getString("password"));
+            row.put("first_name",rs.getString("first_name"));
+            row.put("last_name",rs.getString("last_name"));
+            row.put("institute",rs.getString("institute"));
+            row.put("user_type", rs.getString("user_type"));
+            row.put("acc_status",rs.getString("acc_status"));
+            allAccountsList.put(row);
+        }
+        jsonObject.put("allAccountList",allAccountsList);
+        return jsonObject;
+    }
+
     public JSONObject acceptSignupRequest(JSONObject jsonReq) throws SQLException, ClassNotFoundException {
         JSONObject jsonObject  = new JSONObject();
         this.email = jsonReq.getString("email");
@@ -117,6 +152,13 @@ public class UserDao {
         return jsonObject;
     }
 
+    /**
+     * Updates the account status (active,deactivated)
+     * @param jsonReq
+     * @return
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     */
     public JSONObject manageAccount(JSONObject jsonReq) throws SQLException, ClassNotFoundException {
         JSONObject jsonObject = new JSONObject();
         this.email = jsonReq.getString("email");

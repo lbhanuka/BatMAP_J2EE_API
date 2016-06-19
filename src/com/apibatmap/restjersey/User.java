@@ -336,6 +336,28 @@ public class User {
                 .build();
     }
 
+    @Path("/getallaccountslist")
+    @GET
+    @Produces("application/json")
+    public Response getAllAcc() throws SQLException, ClassNotFoundException {
+        UserDao ud = new UserDao();
+        JSONObject jsonObject = ud.getAllAccounts();
+        if(jsonObject.getJSONArray("allAccountList").length()==0){
+            jsonObject.put("getAll",false);
+        }else {
+            jsonObject.put("getAll",true);
+        }
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .entity(jsonObject.toString())
+                .build();
+    }
+
     /**
      * accept signup request
      * @param st
