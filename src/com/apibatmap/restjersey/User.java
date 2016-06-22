@@ -133,31 +133,8 @@ public class User {
     public Response signin(String st) throws SQLException, ClassNotFoundException {
         System.out.println("sign in request received");
         JSONObject jsonReq = new JSONObject(st);
-        String email = jsonReq.getString("email");
-        String password = jsonReq.getString("password");
-        JSONObject jsonObject = new JSONObject();
-        DBConnection logindb = new DBConnection();
-        String sql2 = "SELECT * FROM user WHERE email = ? AND password = ?";
-        String[] parms = {email,password};
-        ResultSet rs = logindb.query(sql2,parms);
-        if(rs.next()){
-            jsonObject.put("email",rs.getString("email"));
-            jsonObject.put("user_type",rs.getString("user_type"));
-            jsonObject.put("acc_status",rs.getString("acc_status"));
-            if(rs.getString("acc_status").equals("active")){
-                jsonObject.put("signin", true);
-            }else if(rs.getString("acc_status").equals("pending")){
-                jsonObject.put("signin", false);
-                jsonObject.put("status", "pending");
-            }else if(rs.getString("acc_status").equals("deactivated")){
-                jsonObject.put("signin", false);
-                jsonObject.put("status", "deactivated");
-            }
-        }else {
-            jsonObject.put("signin", false);
-            jsonObject.put("cred", false);
-
-        }
+        UserDao ud = new UserDao();
+        JSONObject jsonObject = ud.signin(jsonReq);
         return Response
                 .status(200)
                 .header("Access-Control-Allow-Origin", "*")
@@ -198,41 +175,9 @@ public class User {
     @Produces("application/json")
     public Response signup(String st) throws SQLException, ClassNotFoundException {
         System.out.println("sign up request received");
-
         JSONObject jsonReq = new JSONObject(st);
-        String email = jsonReq.getString("email");
-        String password = jsonReq.getString("password");
-        String confpassword = jsonReq.getString("confirmpassword");
-        String first_name = jsonReq.getString("first_name");
-        String last_name = jsonReq.getString("last_name");
-        String institute = jsonReq.getString("institute");
-        String user_type = "researcher";
-        String acc_status = "pending";
-
-        DBConnection checkUser = new DBConnection();
-        String sql1 = "SELECT * FROM user WHERE email = ?";
-        String parms1[] = {email};
-        ResultSet rs1 = checkUser.query(sql1, parms1);
-        JSONObject jsonObject = new JSONObject();
-        if(rs1.next()){
-            jsonObject.put("signup", false);
-            jsonObject.put("userExists", true);
-        }else if(password.trim().equals(confpassword.trim())) {
-            jsonObject.put("userExists", false);
-            DBConnection registerDB = new DBConnection();
-            String sql2 = "INSERT INTO user(email,password,first_name,last_name,institute,user_type,acc_status) VALUES (?,?,?,?,?,?,?)";
-            String[] parms2 = {email,password,first_name,last_name,institute,user_type,acc_status};
-            int rs2 = registerDB.insert(sql2, parms2);
-            if(rs2==0) {
-                jsonObject.put("signup", false);
-            }else  if (rs2>0) {
-                jsonObject.put("signup", true);
-            }
-
-        }else {
-            jsonObject.put("passwordNotEquals",true);
-            jsonObject.put("signup", false);
-        }
+        UserDao ud = new UserDao();
+        JSONObject jsonObject = ud.signup(jsonReq);
         return Response
                 .status(200)
                 .header("Access-Control-Allow-Origin", "*")

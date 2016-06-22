@@ -50,4 +50,25 @@ public class ResearchDao {
         jsonObject.put("allResearchList",allResearchList);
         return jsonObject;
     }
+
+    public JSONObject addNewResearch(JSONObject jsonReq) throws SQLException, ClassNotFoundException {
+        JSONObject jsonObject = new JSONObject();
+        DBConnection resDB = new DBConnection();
+        UserDao ud = new UserDao();
+        ud.getAllDetailsByEmail(jsonReq.getString("userEmail"));
+        String user_id = ud.getUser_id();
+        String title = jsonReq.getString("resTitle");
+        String description = jsonReq.getString("resDescription");
+        String sql = "INSERT INTO research(user_id,title,description) VALUES (?,?,?)";
+        String[] parms = {user_id,title,description};
+        int rs = resDB.insert(sql, parms);
+        if(rs==0) {
+            jsonObject.put("addRes", false);
+        }else  if (rs>0) {
+            jsonObject.put("addRes", true);
+        }
+
+        return jsonObject;
+    }
+
 }

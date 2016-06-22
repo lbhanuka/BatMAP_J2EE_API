@@ -30,6 +30,7 @@ public class UserDao {
     public UserDao() {
         this.user_id = null;
         this.email = null;
+
         this.password = null;
         this.first_name = null;
         this.last_name = null;
@@ -38,14 +39,92 @@ public class UserDao {
         this.acc_status = null;
     }
 
-    public void getAllDetailsByEmail(String email){
-
+    public void getAllDetailsByEmail(String email) throws SQLException, ClassNotFoundException {
+        String sql = "SELECT * FROM user WHERE email = ?";
+        String[] params = {email};
+        DBConnection getAllDB = new DBConnection();
+        ResultSet rs = getAllDB.query(sql, params);
+        if(rs.next()){
+            this.user_id = rs.getString("user_id");
+            this.email = email;
+            this.password = rs.getString("password");
+            this.first_name = rs.getString("first_name");
+            this.last_name = rs.getString("last_name");
+            this.institute = rs.getString("institute");
+            this.user_type = rs.getString("user_type");
+            this.acc_status = rs.getString("acc_status");
+        }
     }
 
     public boolean isValidUser(String email,String salt){
         boolean flag = false;
 
         return flag;
+    }
+
+    public JSONObject signin(JSONObject jsonReq) throws SQLException, ClassNotFoundException {
+        JSONObject jsonObject = new JSONObject();
+        String email = jsonReq.getString("email");
+        String password = jsonReq.getString("password");
+        DBConnection logindb = new DBConnection();
+        String sql2 = "SELECT * FROM user WHERE email = ? AND password = ?";
+        String[] parms = {email,password};
+        ResultSet rs = logindb.query(sql2,parms);
+        if(rs.next()){
+            jsonObject.put("email",rs.getString("email"));
+            jsonObject.put("user_type",rs.getString("user_type"));
+            jsonObject.put("acc_status",rs.getString("acc_status"));
+            if(rs.getString("acc_status").equals("active")){
+                jsonObject.put("signin", true);
+            }else if(rs.getString("acc_status").equals("pending")){
+                jsonObject.put("signin", false);
+                jsonObject.put("status", "pending");
+            }else if(rs.getString("acc_status").equals("deactivated")){
+                jsonObject.put("signin", false);
+                jsonObject.put("status", "deactivated");
+            }
+        }else {
+            jsonObject.put("signin", false);
+            jsonObject.put("cred", false);
+
+        }
+        return jsonObject;
+    }
+    public JSONObject signup(JSONObject jsonReq) throws SQLException, ClassNotFoundException {
+        JSONObject jsonObject = new JSONObject();
+        String email = jsonReq.getString("email");
+        String password = jsonReq.getString("password");
+        String confpassword = jsonReq.getString("confirmpassword");
+        String first_name = jsonReq.getString("first_name");
+        String last_name = jsonReq.getString("last_name");
+        String institute = jsonReq.getString("institute");
+        String user_type = "researcher";
+        String acc_status = "pending";
+
+        DBConnection checkUser = new DBConnection();
+        String sql1 = "SELECT * FROM user WHERE email = ?";
+        String parms1[] = {email};
+        ResultSet rs1 = checkUser.query(sql1, parms1);
+        if(rs1.next()){
+            jsonObject.put("signup", false);
+            jsonObject.put("userExists", true);
+        }else if(password.trim().equals(confpassword.trim())) {
+            jsonObject.put("userExists", false);
+            DBConnection registerDB = new DBConnection();
+            String sql2 = "INSERT INTO user(email,password,first_name,last_name,institute,user_type,acc_status) VALUES (?,?,?,?,?,?,?)";
+            String[] parms2 = {email,password,first_name,last_name,institute,user_type,acc_status};
+            int rs2 = registerDB.insert(sql2, parms2);
+            if(rs2==0) {
+                jsonObject.put("signup", false);
+            }else  if (rs2>0) {
+                jsonObject.put("signup", true);
+            }
+
+        }else {
+            jsonObject.put("passwordNotEquals",true);
+            jsonObject.put("signup", false);
+        }
+        return jsonObject;
     }
 
 
@@ -188,6 +267,72 @@ public class UserDao {
 
         return jsonObject;
     }
+    /**
+     * getters and setters
+     */
 
+    public String getUser_id() {
+        return user_id;
+    }
+
+    public void setUser_id(String user_id) {
+        this.user_id = user_id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getFirst_name() {
+        return first_name;
+    }
+
+    public void setFirst_name(String first_name) {
+        this.first_name = first_name;
+    }
+
+    public String getLast_name() {
+        return last_name;
+    }
+
+    public void setLast_name(String last_name) {
+        this.last_name = last_name;
+    }
+
+    public String getInstitute() {
+        return institute;
+    }
+
+    public void setInstitute(String institute) {
+        this.institute = institute;
+    }
+
+    public String getUser_type() {
+        return user_type;
+    }
+
+    public void setUser_type(String user_type) {
+        this.user_type = user_type;
+    }
+
+    public String getAcc_status() {
+        return acc_status;
+    }
+
+    public void setAcc_status(String acc_status) {
+        this.acc_status = acc_status;
+    }
 
 }
