@@ -95,7 +95,9 @@ public class Research {
         ResearchDao rd = new ResearchDao();
         JSONObject jsonObject = rd.getCommentsByResId(research_id);
         if(jsonObject.getJSONArray("commentsList").length()==0){
-            jsonObject.put("getCommByResId","empty");
+            jsonObject.put("flag",false);
+        }else {
+            jsonObject.put("flag",true);
         }
 
         return Response
@@ -109,12 +111,19 @@ public class Research {
                 .build();
     }
 
-    @Path("{research_id}/{comment_id}/replies")
+    @Path("/research/{research_id}/{comment_id}/replies")
     @GET
     @Produces("application/json")
-    public Response getReplysByComment(@PathParam("research_id") String research_id,
-                                       @PathParam("comment_id") String comment_id){
-        JSONObject jsonObject = new JSONObject();
+    public Response getRepliesByComment(@PathParam("research_id") String research_id,
+                                       @PathParam("comment_id") String comment_id) throws SQLException, ClassNotFoundException {
+        ResearchDao rd = new ResearchDao();
+        JSONObject jsonObject =  rd.getRepliesByCommentId(research_id, comment_id);
+        if(jsonObject.getJSONArray("repliesList").length()==0){
+            jsonObject.put("flag",false);
+        }else {
+            jsonObject.put("flag",true);
+        }
+
         return Response
                 .status(200)
                 .header("Access-Control-Allow-Origin", "*")
@@ -167,6 +176,64 @@ public class Research {
 				.header("Access-Control-Max-Age", "1209600")
 				.build();
 	}
+
+    /**
+     * adding new comment for a research
+     * @return
+     */
+
+	@POST
+    @Path("/research/comment")
+    @Consumes("application/json")
+    @Produces("application/json")
+    public Response addCommentForResearch(String st) throws SQLException, ClassNotFoundException {
+		JSONObject jsonReq = new JSONObject(st);
+		ResearchDao rd = new ResearchDao();
+		boolean flag  = rd.addCommentForResearch(jsonReq);
+        JSONObject jsonObject = new JSONObject();
+		if(flag){
+			jsonObject.put("flag",true);
+		}else {
+			jsonObject.put("flag",false);
+		}
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .entity(jsonObject.toString())
+                .build();
+    }
+
+    @OPTIONS
+    @Path("/research/comment")
+    @Consumes("*/*")
+    public Response addCommentForResearchPre(){
+        return Response
+				.status(200)
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, authorization, Content-Type, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5,  Date, X-Api-Version, X-File-Name")
+				.header("Access-Control-Allow-Credentials", "true")
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600")
+                .build();
+    }
+
+    @OPTIONS
+    @Path("/")
+    @Consumes("*/*")
+    public Response addReplyForCommentPre(){
+        return Response
+				.status(200)
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, authorization, Content-Type, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5,  Date, X-Api-Version, X-File-Name")
+				.header("Access-Control-Allow-Credentials", "true")
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600")
+                .build();
+    }
 
 	private static final String SERVER_UPLOAD_LOCATION_FOLDER = "D://batmapAPI_host/researchFiles/";
 

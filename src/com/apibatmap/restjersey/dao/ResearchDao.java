@@ -95,20 +95,57 @@ public class ResearchDao {
     public JSONObject getCommentsByResId(String research_id) throws SQLException, ClassNotFoundException {
         JSONObject jsonObject = new JSONObject();
         DBConnection rDB = new DBConnection();
-        String sql = "SELECT * from research_comment INNER JOIN user ON research_comment.user_id = user.user_id WHERE research_id = ?";
+        String sql = "SELECT * from research_comment INNER JOIN user ON research_comment.user_id = user.user_id WHERE research_id = ? ORDER BY comment_id ASC";
         String[] params = {research_id};
         ResultSet rs = rDB.query(sql, params);
         JSONArray commentsList = new JSONArray();
         while (rs.next()){
             JSONObject row = new JSONObject();
             row.put("research_id",rs.getString("research_id"));
-            row.put("comment_id",rs.getString("research_id"));
+            row.put("comment_id",rs.getString("comment_id"));
             row.put("user_email",rs.getString("email"));
             row.put("com_content",rs.getString("content"));
             commentsList.put(row);
         }
         jsonObject.put("commentsList",commentsList);
         return jsonObject;
+    }
+
+    public JSONObject getRepliesByCommentId(String research_id, String comment_id) throws SQLException, ClassNotFoundException {
+        JSONObject jsonObject = new JSONObject();
+        DBConnection rDB = new DBConnection();
+//        String sql = "SELECT * from research_comment_reply INNER JOIN user ON research_comment_reply.user_id = user.user_id WHERE comment_id = ?";
+        String sql = "SELECT * from research_comment_reply INNER JOIN user ON research_comment_reply.user_id = user.user_id WHERE comment_id = ?";
+        String[] params = {comment_id};
+        ResultSet rs = rDB.query(sql, params);
+        JSONArray repliesList = new JSONArray();
+        while (rs.next()){
+            JSONObject row = new JSONObject();
+            row.put("comment_id",rs.getString("comment_id"));
+            row.put("reply_id",rs.getString("reply_id"));
+            row.put("rep_user_email",rs.getString("email"));
+            row.put("rep_content",rs.getString("content"));
+            repliesList.put(row);
+        }
+        jsonObject.put("repliesList",repliesList);
+        return jsonObject;
+    }
+
+    public boolean addCommentForResearch(JSONObject jsonReq) throws SQLException, ClassNotFoundException {
+        boolean flag = false;
+        UserDao ud = new UserDao();
+        String research_id = jsonReq.getString("research_id");
+        ud.getAllDetailsByEmail(jsonReq.getString("user_email"));
+        String user_id = ud.getUser_id();
+        String content = jsonReq.getString("content");
+        DBConnection rDB = new DBConnection();
+        String sql = "INSERT INTO research_comment(research_id,user_id,content) VALUES (?,?,?)";
+        String[] params = {research_id,user_id,content};
+        int rs = rDB.insert(sql,params);
+        if(rs>0){
+            flag = true;
+        }
+        return flag;
     }
 
 }
