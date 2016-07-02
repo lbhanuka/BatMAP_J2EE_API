@@ -42,7 +42,8 @@ public class ResearchDao {
             row.put("user_email",rs.getString("email"));
             row.put("title",rs.getString("title"));
             row.put("description",rs.getString("description"));
-            row.put("time",rs.getString("time"));
+            row.put("created_date",rs.getDate("time"));
+            row.put("created_time",rs.getTime("time"));
             row.put("updated",rs.getString("updated"));
             row.put("last_update",rs.getString("last_update"));
             allResearchList.put(row);
@@ -104,19 +105,20 @@ public class ResearchDao {
             row.put("research_id",rs.getString("research_id"));
             row.put("comment_id",rs.getString("comment_id"));
             row.put("user_email",rs.getString("email"));
-            row.put("com_content",rs.getString("content"));
+            row.put("com_content", rs.getString("content"));
+            row.put("created_date", rs.getDate("time"));
+            row.put("created_time",rs.getTime("time"));
             commentsList.put(row);
         }
         jsonObject.put("commentsList",commentsList);
         return jsonObject;
     }
 
-    public JSONObject getRepliesByCommentId(String research_id, String comment_id) throws SQLException, ClassNotFoundException {
+    public JSONObject getRepliesByResearch(String research_id) throws SQLException, ClassNotFoundException {
         JSONObject jsonObject = new JSONObject();
         DBConnection rDB = new DBConnection();
-//        String sql = "SELECT * from research_comment_reply INNER JOIN user ON research_comment_reply.user_id = user.user_id WHERE comment_id = ?";
-        String sql = "SELECT * from research_comment_reply INNER JOIN user ON research_comment_reply.user_id = user.user_id WHERE comment_id = ?";
-        String[] params = {comment_id};
+        String sql = "SELECT user.*,research_comment_reply.* from research_comment_reply INNER JOIN user ON research_comment_reply.user_id = user.user_id INNER JOIN research_comment ON research_comment_reply.comment_id = research_comment.comment_id WHERE research_id = ?";
+        String[] params = {research_id};
         ResultSet rs = rDB.query(sql, params);
         JSONArray repliesList = new JSONArray();
         while (rs.next()){

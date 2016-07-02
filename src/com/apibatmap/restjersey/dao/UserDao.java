@@ -74,6 +74,7 @@ public class UserDao {
             jsonObject.put("email",rs.getString("email"));
             jsonObject.put("user_type",rs.getString("user_type"));
             jsonObject.put("acc_status",rs.getString("acc_status"));
+            jsonObject.put("user_id",rs.getString("user_id"));
             if(rs.getString("acc_status").equals("active")){
                 jsonObject.put("signin", true);
             }else if(rs.getString("acc_status").equals("pending")){

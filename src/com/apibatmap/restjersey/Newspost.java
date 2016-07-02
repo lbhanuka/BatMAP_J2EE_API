@@ -4,10 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
 import org.json.JSONArray;
@@ -31,7 +28,7 @@ public class Newspost {
 		String result = "@Produces(\"application/json\") \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	  }
-	  @Path("/gettennews")
+	  @Path("/getfifteennews")
 	  //http://localhost:8080/BatMAP_J2EE_API/newsservice/gettennews
 	  @GET
 	  @Produces("application/json")
@@ -81,5 +78,57 @@ public class Newspost {
     	            .entity("{\"news\":"+jsonArray+"}")
     	            .build();
 	    }
+
+
+    @POST
+    @Path("/addnews")
+    @Consumes("application/json")
+    @Produces("application/json")
+    public Response addnews(String st) throws SQLException, ClassNotFoundException {
+        System.out.println("add news request received");
+
+        JSONObject jsonReq = new JSONObject(st);
+        String user_id = jsonReq.getString("user_id");
+        String header = jsonReq.getString("header");
+        String content = jsonReq.getString("content");
+
+        JSONObject jsonObject = new JSONObject();
+        DBConnection registerDB = new DBConnection();
+        String sql = "INSERT INTO news_post(user_id,header,content) VALUES (?,?,?)";
+        String[] parms = {user_id,header,content};
+        int rs = registerDB.insert(sql, parms);
+        if(rs>0){
+            jsonObject.put("newsadded", true);
+        }else {
+            jsonObject.put("newsadded", false);
+        }
+
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .entity(jsonObject.toString())
+                .build();
+
+    }
+
+    @OPTIONS
+    @Path("/addnews")
+    @Consumes("*/*")
+    public Response addNewsPre(){
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, authorization, Content-Type, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5,  Date, X-Api-Version, X-File-Name")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .build();
+    }
+
+
 
 }

@@ -111,13 +111,12 @@ public class Research {
                 .build();
     }
 
-    @Path("/research/{research_id}/{comment_id}/replies")
+    @Path("/research/{research_id}/replies")
     @GET
     @Produces("application/json")
-    public Response getRepliesByComment(@PathParam("research_id") String research_id,
-                                       @PathParam("comment_id") String comment_id) throws SQLException, ClassNotFoundException {
+    public Response getRepliesByResearch(@PathParam("research_id") String research_id) throws SQLException, ClassNotFoundException {
         ResearchDao rd = new ResearchDao();
-        JSONObject jsonObject =  rd.getRepliesByCommentId(research_id, comment_id);
+        JSONObject jsonObject =  rd.getRepliesByResearch(research_id);
         if(jsonObject.getJSONArray("repliesList").length()==0){
             jsonObject.put("flag",false);
         }else {
