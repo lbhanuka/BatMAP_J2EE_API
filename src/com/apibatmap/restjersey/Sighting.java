@@ -1,5 +1,12 @@
 package com.apibatmap.restjersey;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -9,10 +16,15 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.imageio.ImageIO;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.core.Response;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.FormDataParam;
+
 import org.json.JSONArray;
 import javax.ws.rs.core.MediaType;
 
@@ -115,6 +127,7 @@ public class Sighting {
 			JSONObject jsonObject = new JSONObject();
 			String species_id = "";
 			String location_id = "";
+			String user_id = "";
 			
 	        DBConnection mydb = new DBConnection();
         	String sql = "SELECT * FROM species WHERE species_name = ?";
@@ -138,25 +151,37 @@ public class Sighting {
             	jsonObject.put("succsess", false);
             }
             
+        	String sql4 = "SELECT user_id FROM user WHERE email = ?";
+        	String param4 = newSighting.getString("user");
+            String[] parms4 = {param4};
+            ResultSet rs4 = mydb.query(sql4,parms4);
+            if(rs4.next()){
+        		user_id = String.valueOf(rs4.getInt("user_id")); 
+            }else {
+            	jsonObject.put("succsess", false);
+            }
+            
             String date = newSighting.getString("date");
             date = date.substring(0, 10);
             String time = newSighting.getString("time");
             String count = newSighting.getString("count");
             String lat = String.valueOf(newSighting.getDouble("lat"));
             String lng = String.valueOf(newSighting.getDouble("lng"));
-            String user = "1";
-            String comment = newSighting.getString("comment");
+            String comment = newSighting.getString("comments");
 
         	String sqlMain = "INSERT INTO  `sighting` (`user_id` ,`longitude` ,`latitude` ,`species_id` ,`count` ,`date` ,`time` ,`location_id` ,`comment`)VALUES (?,  ?,  ?,  ?,  ?, ?,  ?,  ?,  ?);";
-            String[] parmsMain = {user,lng,lat,species_id,count,date,time,location_id,comment};
-            int rsMain = mydb.insert(sqlMain,parmsMain);
-            //if(rsMain.next()){
+            String[] parmsMain = {user_id,lng,lat,species_id,count,date,time,location_id,comment};
+            mydb.insert(sqlMain,parmsMain);
 
-            //}else {
-            	
-            //}
-			//String test = newSighting.getString("count");
-			result = "{\"Record entered\": \"" + "DONE" + "\"}";
+            
+        	String last_id = null;
+            String sql3 = "SELECT `sighting`.`sighting_id` FROM  `sighting` ORDER BY  `sighting`.`sighting_id` DESC LIMIT 0 , 1";
+            String[] parms3 = {};
+            ResultSet rs = mydb.query(sql3,parms3);
+            if(rs.next()){
+            	last_id = rs.getString("sighting_id");
+            }
+			result = "{\"Record_id\": \"" + last_id + "\"}";
 			
 			return Response 	
 					.status(200)
@@ -190,4 +215,128 @@ public class Sighting {
 			//String result = "@Produces(\"application/json\")\n\n" + jsonObject;
 			return result;
 		  }
+		  
+		  
+			/**
+			 * Upload a File
+			 * @throws SQLException 
+			 * @throws ClassNotFoundException 
+			 */
+			private static final String SERVER_UPLOAD_LOCATION_FOLDER = "/home/bhanuka/Pictures/sightings/";
+
+			@POST
+			@Path("/upload")
+			@Consumes(MediaType.MULTIPART_FORM_DATA)
+			public Response uploadFile(
+					@FormDataParam("file") InputStream fileInputStream,
+					@FormDataParam("file") FormDataContentDisposition contentDispositionHeader) throws ClassNotFoundException, SQLException {
+				
+		        DBConnection mydb = new DBConnection();
+		        String file_name;
+	        	
+		        String last_sighting_id = null;
+	            String sql3 = "SELECT `sighting`.`sighting_id` FROM  `sighting` ORDER BY  `sighting`.`sighting_id` DESC LIMIT 0 , 1";
+	            String[] parms3 = {};
+	            ResultSet rs = mydb.query(sql3,parms3);
+	            if(rs.next()){
+	            	last_sighting_id = rs.getString("sighting_id");
+	            }
+	            
+	        	String sql6 = "LOCK TABLES `sighting_image` WRITE;";
+	            String[] parms6 = {};
+	            mydb.insert(sql6,parms6); 
+	            
+	        	String sql4 = "INSERT INTO  `sighting_image` (`sighting_id`)VALUES (?);";
+	            String[] parms4 = {last_sighting_id};
+	            mydb.insert(sql4,parms4); 
+	            
+		        String last_image_id = null;
+	            String sql5 = "SELECT `sighting_image`.`image_path` FROM  `sighting_image` ORDER BY  `sighting_image`.`image_path` DESC LIMIT 0 , 1";
+	            String[] parms5 = {};
+	            ResultSet rs5 = mydb.query(sql5,parms5);
+	            if(rs5.next()){
+	            	last_image_id = rs5.getString("image_path");
+	            }
+	            
+	        	String sql7 = "UNLOCK TABLES;";
+	            String[] parms7 = {};
+	            mydb.insert(sql7,parms7); 
+	            
+	            file_name = last_image_id;
+	            String filePath = SERVER_UPLOAD_LOCATION_FOLDER	+ last_image_id + ".png";
+
+				// save the file to the server
+				saveFile(fileInputStream, filePath);
+
+	        	//String sql2 = "UPDATE  `batmap`.`species` SET  `main_picture` = ? WHERE  `species`.`species_id` =?;";
+	            //String[] parms2 = {(file_name+".png"),file_name};
+	            //mydb.insert(sql2,parms2);
+	            System.out.println("got last id as " + last_image_id);
+
+				String output = "New Species recorded successfully.";
+
+				return Response
+						.status(200)
+						.header("Access-Control-Allow-Origin", "*")
+			            .header("Access-Control-Allow-Headers", "origin, authorization, Content-Type, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5,  Date, X-Api-Version, X-File-Name, X-Auth-Token")
+			            .header("Access-Control-Allow-Credentials", "true")
+			            .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+			            .header("Access-Control-Max-Age", "1209600")
+						.entity(output).build();
+
+			}
+			
+			// save uploaded file to a defined location on the server
+			private void saveFile(InputStream uploadedInputStream,
+					String serverLocation) {
+
+				try {
+					OutputStream outpuStream = new FileOutputStream(new File(serverLocation));
+					int read = 0;
+					byte[] bytes = new byte[1024];
+
+					outpuStream = new FileOutputStream(new File(serverLocation));
+					while ((read = uploadedInputStream.read(bytes)) != -1) {
+						outpuStream.write(bytes, 0, read);
+					}
+					outpuStream.flush();
+					outpuStream.close();
+				} catch (IOException e) {
+
+					e.printStackTrace();
+				}
+
+			}
+			
+			private static final String FILE_PATH = "/home/bhanuka/Pictures/sightings/";
+
+			@GET
+			@Path("/getimage/{sighting_id}")
+			@Produces("image/png")
+			public Response getImage(@PathParam("sighting_id") String sighting_id) throws IOException, ClassNotFoundException, SQLException {
+	            String image_name = "default.png";
+				DBConnection mydb = new DBConnection();
+		        String sql = "SELECT image_path FROM sighting_image WHERE sighting_id = ?;";
+	            String[] parms = {sighting_id};
+	            ResultSet rs = mydb.query(sql,parms);
+	            if(rs.next()){
+	                image_name = rs.getString("image_path");
+	            }
+	            
+				String filename = FILE_PATH + image_name +".png";
+				File imageFile = new File(filename);
+				BufferedImage image = ImageIO.read(imageFile);
+
+			    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			    ImageIO.write(image, "png", baos);
+			    byte[] imageData = baos.toByteArray();
+
+			    // uncomment line below to send non-streamed
+			    return Response.ok(imageData).build();
+
+			    // uncomment line below to send streamed
+			    //return Response.ok(new ByteArrayInputStream(imageData)).build();
+
+			}
 }
+

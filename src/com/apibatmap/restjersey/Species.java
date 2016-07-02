@@ -144,7 +144,14 @@ public class Species {
             
 			String output = "New Species recorded successfully.";
 
-			return Response.status(200).entity(output).build();
+			return Response
+					.status(200)
+					.header("Access-Control-Allow-Origin", "*")
+		            .header("Access-Control-Allow-Headers", "origin, authorization, Content-Type, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5,  Date, X-Api-Version, X-File-Name, X-Auth-Token")
+		            .header("Access-Control-Allow-Credentials", "true")
+		            .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+		            .header("Access-Control-Max-Age", "1209600")
+					.entity(output).build();
 
 		}
 
