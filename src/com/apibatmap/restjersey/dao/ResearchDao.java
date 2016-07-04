@@ -150,4 +150,26 @@ public class ResearchDao {
         return flag;
     }
 
+    public String getLastResearchId() throws SQLException, ClassNotFoundException {
+        DBConnection mydb = new DBConnection();
+        String file_name = "error";
+        String sql = "SELECT research_id FROM research ORDER BY research_id DESC LIMIT 0 , 1";
+        String[] parms = {};
+        ResultSet rs = mydb.query(sql, parms);
+        if(rs.next()){
+            file_name = rs.getString("research_id");
+//            System.out.println(file_name);
+        }
+        return file_name;
+    }
+
+    public int updateResearchFilePath(String file_name) throws SQLException, ClassNotFoundException {
+        int flag = 0;
+        DBConnection db = new DBConnection();
+        String sql2 = "UPDATE research SET file_path = ? WHERE research_id = ?";
+        String[] parms2 = {(file_name+".pdf"),file_name};
+        flag = db.update(sql2, parms2);
+        return flag;
+    }
+
 }

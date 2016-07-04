@@ -234,7 +234,7 @@ public class Research {
                 .build();
     }
 
-	private static final String SERVER_UPLOAD_LOCATION_FOLDER = "D://batmapAPI_host/researchFiles/";
+	private static final String SERVER_UPLOAD_LOCATION_FOLDER = "/D:/batmapAPI_host/";
 
 	/**
 	 * Upload a File
@@ -265,7 +265,7 @@ public class Research {
 		saveFile(fileInputStream, filePath);
 
 		String sql2 = "UPDATE research SET file_path = ? WHERE research_id = ?";
-		String[] parms2 = {(file_name+".pdf"),file_name};
+		String[] parms2 = {filePath,file_name};
 		mydb.update(sql2, parms2);
 
 		String output = "New research recorded successfully.";
