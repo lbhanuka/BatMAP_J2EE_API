@@ -41,7 +41,7 @@ public class Species {
 	  public Response getAllSpeciesLess() throws ClassNotFoundException, SQLException, JSONException{
         DBConnection mydb = new DBConnection();
       	JSONArray jsonArray = new JSONArray();
-	        	String sql = "SELECT species_id, species_name FROM species;";
+	        	String sql = "SELECT species_id, species_name, colour_code FROM species;";
 	            String[] parms = {};
 	            ResultSet rs = mydb.query(sql,parms);
 	            	while(rs.next()){
@@ -50,9 +50,11 @@ public class Species {
 	                	
 		        		int species_id = rs.getInt("species_id");
 		        		String species_name = rs.getString("species_name");
+		        		String colour_code = rs.getString("colour_code");
 
 		        		jsonObject.put("species_id", species_id); 
 		        		jsonObject.put("species_name", species_name);  
+		        		jsonObject.put("colour_code", colour_code);  
 		        		jsonObject.put("show", false);  
 		        		
 		        		jsonArray.put(jsonObject);

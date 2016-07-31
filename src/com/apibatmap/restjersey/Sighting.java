@@ -38,8 +38,8 @@ public class Sighting {
 	  @GET
 	  @Produces("application/json; charset=UTF-8")
 	  public Response getUser() throws ClassNotFoundException, SQLException, JSONException{
-          DBConnection mydb = new DBConnection();
-        	JSONArray jsonArray = new JSONArray();
+        DBConnection mydb = new DBConnection();
+      	JSONArray jsonArray = new JSONArray();
 	        if(mydb!=null){
 	        	String sql = "SELECT sighting_id, sighting.user_id, first_name, last_name, institute, longitude, latitude, sighting.species_id, species_name, colour_code, count, approval, date, time, sighting.location_id, location FROM sighting INNER JOIN user ON sighting.user_id=user.user_id INNER JOIN species ON sighting.species_id=species.species_id INNER JOIN sighting_location ON sighting.location_id=sighting_location.location_id;";
 	            String[] parms = {};
@@ -49,6 +49,74 @@ public class Sighting {
 	                	JSONObject jsonObject = new JSONObject();
 	                	
 		        		String sighting_id = rs.getString("sighting_id");
+		        		String user_id = rs.getString("user_id");
+		        		String first_name = rs.getString("first_name");
+		        		String last_name = rs.getString("last_name");
+		        		String institute = rs.getString("institute");
+		        		float longitude = rs.getFloat("longitude");
+		        		float latitude = rs.getFloat("latitude");
+		        		String species_id = rs.getString("species_id");
+		        		String species_name = rs.getString("species_name");
+		        		String count = rs.getString("count");
+		        		String date = rs.getString("date");
+		        		String time = rs.getString("time");
+		        		String approval = rs.getString("approval");
+		        		String location_id = rs.getString("location_id");
+		        		String location = rs.getString("location");
+		        		String colour_code = rs.getString("colour_code");
+		        		jsonObject.put("sighting_id", sighting_id); 
+		        		jsonObject.put("user_id", user_id); 
+		        		jsonObject.put("first_name", first_name); 
+		        		jsonObject.put("last_name", last_name); 
+		        		jsonObject.put("institute", institute); 
+		        		jsonObject.put("longitude", longitude); 
+		        		jsonObject.put("latitude", latitude); 
+		        		jsonObject.put("species_id", species_id); 
+		        		jsonObject.put("species_name", species_name); 
+		        		jsonObject.put("count", count); 
+		        		jsonObject.put("date", date); 
+		        		jsonObject.put("time", time); 
+		        		jsonObject.put("approval", approval); 
+		        		jsonObject.put("location_id", location_id); 
+		        		jsonObject.put("location", location);
+		        		jsonObject.put("colour_code", colour_code);  
+		        		jsonObject.put("succsess", true); 
+		        		
+		        		jsonArray.put(jsonObject);
+	            	};
+
+	        		
+	        }else{
+          	JSONObject jsonObject = new JSONObject();
+          	jsonObject.put("succsess", false);
+      		jsonArray.put(jsonObject);
+
+	        }
+  	    return Response
+  	            .status(200)
+  	            .header("Access-Control-Allow-Origin", "*")
+  	            .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+  	            .header("Access-Control-Allow-Credentials", "true")
+  	            .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+  	            .header("Access-Control-Max-Age", "1209600")
+  	            .entity("{\"allsightings\":"+jsonArray+"}")
+  	            .build();
+	    }
+
+	  @Path("/getone/{sighting_id}")
+	  @GET
+	  @Produces("application/json; charset=UTF-8")
+	  public Response getOneSighting(@PathParam("sighting_id") String sighting_id) throws ClassNotFoundException, SQLException, JSONException{
+          DBConnection mydb = new DBConnection();
+        	JSONArray jsonArray = new JSONArray();
+	        if(mydb!=null){
+	        	String sql = "SELECT sighting.user_id, first_name, last_name, institute, longitude, latitude, sighting.species_id, species_name, colour_code, count, approval, date, time, sighting.location_id, location FROM sighting INNER JOIN user ON sighting.user_id=user.user_id INNER JOIN species ON sighting.species_id=species.species_id INNER JOIN sighting_location ON sighting.location_id=sighting_location.location_id WHERE sighting.sighting_id = ?;";
+	            String[] parms = {sighting_id};
+	            ResultSet rs = mydb.query(sql,parms);
+	            	if(rs.next()){
+	            		
+	                	JSONObject jsonObject = new JSONObject();
+	                	
 		        		String user_id = rs.getString("user_id");
 		        		String first_name = rs.getString("first_name");
 		        		String last_name = rs.getString("last_name");
@@ -99,10 +167,79 @@ public class Sighting {
     	            .header("Access-Control-Allow-Credentials", "true")
     	            .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
     	            .header("Access-Control-Max-Age", "1209600")
-    	            .entity("{\"allsightings\":"+jsonArray+"}")
+    	            .entity("{\"sighting\":"+jsonArray+"}")
     	            .build();
 	    }
+	  
 
+	  @Path("/getall/{email}")
+	  @GET
+	  @Produces("application/json; charset=UTF-8")
+	  public Response getAllUserSightings(@PathParam("email") String email) throws ClassNotFoundException, SQLException, JSONException{
+          DBConnection mydb = new DBConnection();
+        	JSONArray jsonArray = new JSONArray();
+	        if(mydb!=null){
+	        	String sql = "SELECT sighting.user_id, sighting_id, first_name, email, last_name, institute, longitude, latitude, sighting.species_id, species_name, colour_code, count, approval, date, time, sighting.location_id, location FROM sighting INNER JOIN user ON sighting.user_id=user.user_id INNER JOIN species ON sighting.species_id=species.species_id INNER JOIN sighting_location ON sighting.location_id=sighting_location.location_id WHERE email = ?;";
+	            String[] parms = {email};
+	            ResultSet rs = mydb.query(sql,parms);
+	            	while(rs.next()){
+	            		
+	                	JSONObject jsonObject = new JSONObject();
+	                	
+		        		String user_id = rs.getString("user_id");
+		        		String sighting_id = rs.getString("sighting_id");
+		        		String first_name = rs.getString("first_name");
+		        		String last_name = rs.getString("last_name");
+		        		String institute = rs.getString("institute");
+		        		float longitude = rs.getFloat("longitude");
+		        		float latitude = rs.getFloat("latitude");
+		        		String species_id = rs.getString("species_id");
+		        		String species_name = rs.getString("species_name");
+		        		String count = rs.getString("count");
+		        		String date = rs.getString("date");
+		        		String time = rs.getString("time");
+		        		String approval = rs.getString("approval");
+		        		String location_id = rs.getString("location_id");
+		        		String location = rs.getString("location");
+		        		String colour_code = rs.getString("colour_code");
+		        		jsonObject.put("sighting_id", sighting_id); 
+		        		jsonObject.put("user_id", user_id); 
+		        		jsonObject.put("first_name", first_name); 
+		        		jsonObject.put("last_name", last_name); 
+		        		jsonObject.put("institute", institute); 
+		        		jsonObject.put("longitude", longitude); 
+		        		jsonObject.put("latitude", latitude); 
+		        		jsonObject.put("species_id", species_id); 
+		        		jsonObject.put("species_name", species_name); 
+		        		jsonObject.put("count", count); 
+		        		jsonObject.put("date", date); 
+		        		jsonObject.put("time", time); 
+		        		jsonObject.put("approval", approval); 
+		        		jsonObject.put("location_id", location_id); 
+		        		jsonObject.put("location", location);
+		        		jsonObject.put("colour_code", colour_code);  
+		        		jsonObject.put("succsess", true); 
+		        		
+		        		jsonArray.put(jsonObject);
+	            	};
+
+	        		
+	        }else{
+            	JSONObject jsonObject = new JSONObject();
+            	jsonObject.put("succsess", false);
+        		jsonArray.put(jsonObject);
+
+	        }
+    	    return Response
+    	            .status(200)
+    	            .header("Access-Control-Allow-Origin", "*")
+    	            .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+    	            .header("Access-Control-Allow-Credentials", "true")
+    	            .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+    	            .header("Access-Control-Max-Age", "1209600")
+    	            .entity("{\"usersightings\":"+jsonArray+"}")
+    	            .build();
+	    }
 	  
 	  	@OPTIONS
 		@Consumes("*/*")
@@ -182,6 +319,10 @@ public class Sighting {
             	last_id = rs.getString("sighting_id");
             }
 			result = "{\"Record_id\": \"" + last_id + "\"}";
+			
+        	String sql5 = "INSERT INTO  `admin_notifications` (`notification_type_id`,`event_id`)VALUES (?, ?);";
+            String[] parms5 = {"2",last_id};
+            mydb.insert(sql5,parms5);
 			
 			return Response 	
 					.status(200)
@@ -311,17 +452,10 @@ public class Sighting {
 			private static final String FILE_PATH = "/home/bhanuka/Pictures/sightings/";
 
 			@GET
-			@Path("/getimage/{sighting_id}")
+			@Path("/getimage/{image_id}")
 			@Produces("image/png")
-			public Response getImage(@PathParam("sighting_id") String sighting_id) throws IOException, ClassNotFoundException, SQLException {
-	            String image_name = "default.png";
-				DBConnection mydb = new DBConnection();
-		        String sql = "SELECT image_path FROM sighting_image WHERE sighting_id = ?;";
-	            String[] parms = {sighting_id};
-	            ResultSet rs = mydb.query(sql,parms);
-	            if(rs.next()){
-	                image_name = rs.getString("image_path");
-	            }
+			public Response getImage(@PathParam("image_id") String image_id) throws IOException, ClassNotFoundException, SQLException {
+	            String image_name = image_id;
 	            
 				String filename = FILE_PATH + image_name +".png";
 				File imageFile = new File(filename);
@@ -338,5 +472,117 @@ public class Sighting {
 			    //return Response.ok(new ByteArrayInputStream(imageData)).build();
 
 			}
+			
+			@GET
+			@Path("/getimageids/{sighting_id}")
+			@Produces("application/json; charset=UTF-8")
+			public Response getImageIds(@PathParam("sighting_id") String sighting_id) throws IOException, ClassNotFoundException, SQLException {
+				DBConnection mydb = new DBConnection();
+		      	JSONArray jsonArray = new JSONArray();
+		        String sql = "SELECT image_path FROM sighting_image WHERE sighting_id = ?;";
+	            String[] parms = {sighting_id};
+	            ResultSet rs = mydb.query(sql,parms);
+	            
+            	while(rs.next()){                	
+	        		jsonArray.put(rs.getInt("image_path"));
+            	};
+
+          	    return Response
+          	            .status(200)
+          	            .header("Access-Control-Allow-Origin", "*")
+          	            .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+          	            .header("Access-Control-Allow-Credentials", "true")
+          	            .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+          	            .header("Access-Control-Max-Age", "1209600")
+          	            .entity("{\"imageIds\":"+jsonArray+"}")
+          	            .build();
+			}
+			
+			@GET
+			@Path("/remove/{sighting_id}")
+			@Produces("application/json; charset=UTF-8")
+			public Response removeSighting(@PathParam("sighting_id") String sighting_id) throws IOException, ClassNotFoundException, SQLException {
+				DBConnection mydb = new DBConnection();
+		        String sql1 = "DELETE FROM `sighting` WHERE `sighting`.`sighting_id` = ?";
+		        String sql2 = "DELETE FROM `sighting_image` WHERE `sighting_image`.`sighting_id` = ?";
+	            String[] parms = {sighting_id};
+	            mydb.insert(sql2,parms);
+	            mydb.insert(sql1,parms);
+
+
+          	    return Response
+          	            .status(200)
+          	            .header("Access-Control-Allow-Origin", "*")
+          	            .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+          	            .header("Access-Control-Allow-Credentials", "true")
+          	            .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+          	            .header("Access-Control-Max-Age", "1209600")
+          	            .entity("{\"status\":"+ "\"done\"" +"}")
+          	            .build();
+			}
+			
+			@GET
+			@Path("/accept/{sighting_id}")
+			@Produces("application/json; charset=UTF-8")
+			public Response acceptSighting(@PathParam("sighting_id") String sighting_id) throws IOException, ClassNotFoundException, SQLException {
+				DBConnection mydb = new DBConnection();
+		        String sql = "UPDATE  `sighting` SET  `approval` =  'approved' WHERE  `sighting`.`sighting_id` = ?";
+	            String[] parms = {sighting_id};
+	            mydb.insert(sql,parms);
+
+
+          	    return Response
+          	            .status(200)
+          	            .header("Access-Control-Allow-Origin", "*")
+          	            .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+          	            .header("Access-Control-Allow-Credentials", "true")
+          	            .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+          	            .header("Access-Control-Max-Age", "1209600")
+          	            .entity("{\"status\":"+ "\"done\"" +"}")
+          	            .build();
+			}
+			
+			@GET
+			@Path("/updateSpecies/{sighting_id}/{species_id}")
+			@Produces("application/json; charset=UTF-8")
+			public Response updateSpecies(@PathParam("sighting_id") String sighting_id, @PathParam("species_id") String species_id) throws IOException, ClassNotFoundException, SQLException {
+				DBConnection mydb = new DBConnection();
+		        String sql = "UPDATE  `sighting` SET  `sighting`.`species_id` = ?  WHERE  `sighting`.`sighting_id` = ?";
+	            String[] parms = {species_id,sighting_id};
+	            mydb.insert(sql,parms);
+
+
+          	    return Response
+          	            .status(200)
+          	            .header("Access-Control-Allow-Origin", "*")
+          	            .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+          	            .header("Access-Control-Allow-Credentials", "true")
+          	            .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+          	            .header("Access-Control-Max-Age", "1209600")
+          	            .entity("{\"status\":"+ "\"done\"" +"}")
+          	            .build();
+			}
+			
+			@GET
+			@Path("/removeimage/{image_id}")
+			@Produces("application/json; charset=UTF-8")
+			public Response removeImage(@PathParam("image_id") String image_id) throws IOException, ClassNotFoundException, SQLException {
+				DBConnection mydb = new DBConnection();
+		        String sql = "DELETE FROM `sighting_image` WHERE `sighting_image`.`image_path` = ?";
+	            String[] parms = {image_id};
+	            mydb.insert(sql,parms);
+
+
+          	    return Response
+          	            .status(200)
+          	            .header("Access-Control-Allow-Origin", "*")
+          	            .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+          	            .header("Access-Control-Allow-Credentials", "true")
+          	            .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+          	            .header("Access-Control-Max-Age", "1209600")
+          	            .entity("{\"status\":"+ "\"done\"" +"}")
+          	            .build();
+			}
+			
 }
 
