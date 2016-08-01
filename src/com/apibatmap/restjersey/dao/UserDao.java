@@ -4,6 +4,9 @@ import com.apibatmap.restjersey.DBConnection;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -62,13 +65,33 @@ public class UserDao {
         return flag;
     }
 
-    public JSONObject signin(JSONObject jsonReq) throws SQLException, ClassNotFoundException {
+    private String hashPassword(String password) throws NoSuchAlgorithmException {
+
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(password.getBytes());
+
+        byte byteData[] = md.digest();
+
+        //convert the byte to hex format method 1
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < byteData.length; i++) {
+            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+        }
+
+//        System.out.println("Hex format : " + sb.toString());
+
+        return sb.toString();
+    }
+
+    public JSONObject signin(JSONObject jsonReq) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException {
         JSONObject jsonObject = new JSONObject();
         String email = jsonReq.getString("email");
         String password = jsonReq.getString("password");
+        //hashing and checking
+        String hashedPass = hashPassword(password);
         DBConnection logindb = new DBConnection();
         String sql2 = "SELECT * FROM user WHERE email = ? AND password = ?";
-        String[] parms = {email,password};
+        String[] parms = {email,hashedPass};
         ResultSet rs = logindb.query(sql2,parms);
         if(rs.next()){
             jsonObject.put("email",rs.getString("email"));
@@ -91,7 +114,7 @@ public class UserDao {
         }
         return jsonObject;
     }
-    public JSONObject signup(JSONObject jsonReq) throws SQLException, ClassNotFoundException {
+    public JSONObject signup(JSONObject jsonReq) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException {
         JSONObject jsonObject = new JSONObject();
         String email = jsonReq.getString("email");
         String password = jsonReq.getString("password");
@@ -111,9 +134,12 @@ public class UserDao {
             jsonObject.put("userExists", true);
         }else if(password.trim().equals(confpassword.trim())) {
             jsonObject.put("userExists", false);
+            //hashing
+            String hashedPassword = hashPassword(password);
+
             DBConnection registerDB = new DBConnection();
             String sql2 = "INSERT INTO user(email,password,first_name,last_name,institute,user_type,acc_status) VALUES (?,?,?,?,?,?,?)";
-            String[] parms2 = {email,password,first_name,last_name,institute,user_type,acc_status};
+            String[] parms2 = {email,hashedPassword,first_name,last_name,institute,user_type,acc_status};
             int rs2 = registerDB.insert(sql2, parms2);
             if(rs2==0) {
                 jsonObject.put("signup", false);

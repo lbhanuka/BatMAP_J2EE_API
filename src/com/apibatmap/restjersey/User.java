@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -130,7 +131,7 @@ public class User {
     @Path("/signin")
     @Consumes("application/json")
     @Produces("application/json")
-    public Response signin(String st) throws SQLException, ClassNotFoundException {
+    public Response signin(String st) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException {
         System.out.println("sign in request received");
         JSONObject jsonReq = new JSONObject(st);
         UserDao ud = new UserDao();
@@ -173,7 +174,7 @@ public class User {
     @Path("/signup")
     @Consumes("application/json")
     @Produces("application/json")
-    public Response signup(String st) throws SQLException, ClassNotFoundException {
+    public Response signup(String st) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException {
         System.out.println("sign up request received");
         JSONObject jsonReq = new JSONObject(st);
         UserDao ud = new UserDao();
