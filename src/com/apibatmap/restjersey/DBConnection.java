@@ -77,6 +77,18 @@ public class DBConnection {
         return result;
     }
 
+    public ResultSet likeQuery(String query, String[] parms) throws SQLException, ClassNotFoundException {
+        getDbConnection();
+        statement = connection.prepareStatement(query);
+        if(parms.length!=0){
+            for(int i=0;i<parms.length;i++){
+                statement.setString(i + 1, "%" + parms[i] + "%");
+            }
+        }
+        ResultSet res = statement.executeQuery();
+        return res;
+    }
+
 }
 
 
