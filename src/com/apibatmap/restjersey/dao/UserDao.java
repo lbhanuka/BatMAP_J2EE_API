@@ -285,9 +285,9 @@ public class UserDao {
         DBConnection searchDB = new DBConnection();
         System.out.println(searchBy);
         if(searchBy.equals("email")){
-            String sql = "SELECT * FROM user WHERE email = ?";
+            String sql = "SELECT * FROM user WHERE email LIKE ?";
             String[] params = {searchTerm};
-            ResultSet rs =  searchDB.query(sql, params);
+            ResultSet rs =  searchDB.likeQuery(sql, params);
             JSONArray AccountsList = new JSONArray();
             while (rs.next()){
                 JSONObject row = new JSONObject();
@@ -303,9 +303,9 @@ public class UserDao {
             }
             jsonObject.put("AccountList",AccountsList);
         }else if(searchBy.equals("first_name")){
-            String sql = "SELECT * FROM user WHERE first_name = ?";
+            String sql = "SELECT * FROM user WHERE first_name LIKE ?";
             String[] params = {searchTerm};
-            ResultSet rs =  searchDB.query(sql, params);
+            ResultSet rs =  searchDB.likeQuery(sql, params);
             JSONArray AccountsList = new JSONArray();
             while (rs.next()){
                 JSONObject row = new JSONObject();
@@ -321,9 +321,9 @@ public class UserDao {
             }
             jsonObject.put("AccountList",AccountsList);
         }else if(searchBy.equals("last_name")){
-            String sql = "SELECT * FROM user WHERE last_name = ?";
+            String sql = "SELECT * FROM user WHERE last_name LIKE ?";
             String[] params = {searchTerm};
-            ResultSet rs =  searchDB.query(sql, params);
+            ResultSet rs =  searchDB.likeQuery(sql, params);
             JSONArray AccountsList = new JSONArray();
             while (rs.next()){
                 JSONObject row = new JSONObject();
@@ -339,9 +339,9 @@ public class UserDao {
             }
             jsonObject.put("AccountList",AccountsList);
         }else if(searchBy.equals("institute")){
-            String sql = "SELECT * FROM user WHERE institute = ?";
+            String sql = "SELECT * FROM user WHERE institute LIKE ?";
             String[] params = {searchTerm};
-            ResultSet rs =  searchDB.query(sql, params);
+            ResultSet rs =  searchDB.likeQuery(sql, params);
             JSONArray AccountsList = new JSONArray();
             while (rs.next()){
                 JSONObject row = new JSONObject();
