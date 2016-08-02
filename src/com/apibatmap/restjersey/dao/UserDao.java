@@ -163,9 +163,9 @@ public class UserDao {
      * @throws SQLException
      * @throws ClassNotFoundException
      */
-    public JSONObject updateProfile(JSONObject jsonReq) throws SQLException, ClassNotFoundException {
+    public JSONObject updateProfile(JSONObject jsonReq) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException {
         this.email = jsonReq.getString("email");
-        this.password = jsonReq.getString("password");
+        this.password = hashPassword(jsonReq.getString("password"));
         this.first_name = jsonReq.getString("first_name");
         this.last_name = jsonReq.getString("last_name");
         this.institute = jsonReq.getString("institute");
@@ -238,25 +238,10 @@ public class UserDao {
             row.put("acc_status",rs.getString("acc_status"));
             allAccountsList.put(row);
         }
-        jsonObject.put("allAccountList",allAccountsList);
+        jsonObject.put("allAccountList", allAccountsList);
         return jsonObject;
     }
 
-    public JSONObject acceptSignupRequest(JSONObject jsonReq) throws SQLException, ClassNotFoundException {
-        JSONObject jsonObject  = new JSONObject();
-        this.email = jsonReq.getString("email");
-        this.acc_status = "active";
-        String sql = "UPDATE user SET acc_status = ? WHERE email = ? ";
-        String[] params = {acc_status,email};
-        DBConnection updateUsr = new DBConnection();
-        int rs = updateUsr.update(sql, params);
-        if(rs == 0){
-            jsonObject.put("accepted",false);
-        }else if(rs>0){
-            jsonObject.put("accepted",true);
-        }
-        return jsonObject;
-    }
 
     /**
      * Updates the account status (active,deactivated)
@@ -294,6 +279,88 @@ public class UserDao {
 
         return jsonObject;
     }
+
+    public JSONObject search(String searchBy, String searchTerm) throws SQLException, ClassNotFoundException {
+        JSONObject jsonObject = new JSONObject();
+        DBConnection searchDB = new DBConnection();
+        System.out.println(searchBy);
+        if(searchBy.equals("email")){
+            String sql = "SELECT * FROM user WHERE email = ?";
+            String[] params = {searchTerm};
+            ResultSet rs =  searchDB.query(sql, params);
+            JSONArray AccountsList = new JSONArray();
+            while (rs.next()){
+                JSONObject row = new JSONObject();
+                row.put("user_id", rs.getString("user_id"));
+                row.put("email",rs.getString("email"));
+                row.put("password",rs.getString("password"));
+                row.put("first_name",rs.getString("first_name"));
+                row.put("last_name",rs.getString("last_name"));
+                row.put("institute",rs.getString("institute"));
+                row.put("user_type", rs.getString("user_type"));
+                row.put("acc_status",rs.getString("acc_status"));
+                AccountsList.put(row);
+            }
+            jsonObject.put("AccountList",AccountsList);
+        }else if(searchBy.equals("first_name")){
+            String sql = "SELECT * FROM user WHERE first_name = ?";
+            String[] params = {searchTerm};
+            ResultSet rs =  searchDB.query(sql, params);
+            JSONArray AccountsList = new JSONArray();
+            while (rs.next()){
+                JSONObject row = new JSONObject();
+                row.put("user_id", rs.getString("user_id"));
+                row.put("email",rs.getString("email"));
+                row.put("password",rs.getString("password"));
+                row.put("first_name",rs.getString("first_name"));
+                row.put("last_name",rs.getString("last_name"));
+                row.put("institute",rs.getString("institute"));
+                row.put("user_type", rs.getString("user_type"));
+                row.put("acc_status",rs.getString("acc_status"));
+                AccountsList.put(row);
+            }
+            jsonObject.put("AccountList",AccountsList);
+        }else if(searchBy.equals("last_name")){
+            String sql = "SELECT * FROM user WHERE last_name = ?";
+            String[] params = {searchTerm};
+            ResultSet rs =  searchDB.query(sql, params);
+            JSONArray AccountsList = new JSONArray();
+            while (rs.next()){
+                JSONObject row = new JSONObject();
+                row.put("user_id", rs.getString("user_id"));
+                row.put("email",rs.getString("email"));
+                row.put("password",rs.getString("password"));
+                row.put("first_name",rs.getString("first_name"));
+                row.put("last_name",rs.getString("last_name"));
+                row.put("institute",rs.getString("institute"));
+                row.put("user_type", rs.getString("user_type"));
+                row.put("acc_status",rs.getString("acc_status"));
+                AccountsList.put(row);
+            }
+            jsonObject.put("AccountList",AccountsList);
+        }else if(searchBy.equals("institute")){
+            String sql = "SELECT * FROM user WHERE institute = ?";
+            String[] params = {searchTerm};
+            ResultSet rs =  searchDB.query(sql, params);
+            JSONArray AccountsList = new JSONArray();
+            while (rs.next()){
+                JSONObject row = new JSONObject();
+                row.put("user_id", rs.getString("user_id"));
+                row.put("email",rs.getString("email"));
+                row.put("password",rs.getString("password"));
+                row.put("first_name",rs.getString("first_name"));
+                row.put("last_name",rs.getString("last_name"));
+                row.put("institute",rs.getString("institute"));
+                row.put("user_type", rs.getString("user_type"));
+                row.put("acc_status",rs.getString("acc_status"));
+                AccountsList.put(row);
+            }
+            jsonObject.put("AccountList",AccountsList);
+        }
+        return jsonObject;
+    }
+
+
     /**
      * getters and setters
      */

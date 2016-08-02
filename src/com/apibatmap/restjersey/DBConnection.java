@@ -8,6 +8,7 @@ import java.sql.*;
 
 public class DBConnection {
     private Connection connection;
+    private PreparedStatement statement;
     private String url = null;
     private String dbName = null;
     private String username = null;
@@ -16,6 +17,7 @@ public class DBConnection {
 
     public DBConnection() {
         this.connection = null;
+        this.statement = null;
         this.url = "jdbc:mysql://localhost:3306/";
         this.dbName = "batmap";
         this.driver = "com.mysql.jdbc.Driver";
@@ -37,7 +39,7 @@ public class DBConnection {
 
     public ResultSet query(String query, String[] parms) throws SQLException, ClassNotFoundException {
         getDbConnection();
-        PreparedStatement statement = connection.prepareStatement(query);
+        statement = connection.prepareStatement(query);
         if(parms.length!=0){
             for(int i=0;i<parms.length;i++){
                 statement.setString(i + 1, parms[i]);
@@ -51,7 +53,7 @@ public class DBConnection {
 
     public int insert(String insertQuery, String[] parms) throws SQLException, ClassNotFoundException {
         getDbConnection();
-        PreparedStatement statement = connection.prepareStatement(insertQuery);
+        statement = connection.prepareStatement(insertQuery);
         if(parms.length!=0){
             for(int i=0;i<parms.length;i++){
                 statement.setString(i+1,parms[i]);
@@ -64,7 +66,7 @@ public class DBConnection {
 
     public int update(String updateQuery, String[] parms) throws SQLException, ClassNotFoundException {
         getDbConnection();
-        PreparedStatement statement = connection.prepareStatement(updateQuery);
+        statement = connection.prepareStatement(updateQuery);
         if(parms.length!=0){
             for(int i=0;i<parms.length;i++){
                 statement.setString(i+1,parms[i]);

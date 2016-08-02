@@ -20,49 +20,27 @@ import java.util.Map;
 @Path("/userservice")
 public class User {
 
-	  @Path("/test")
-	  //use the link below to test if this works!
-	  //http://localhost:8080/BatMAP_J2EE_API/userservice/test
+	  @Path("/search/{searchBy}/{searchTerm}")
 	  @GET
 	  @Produces("application/json")
-	  public String testMethode() throws JSONException {
+	  public Response search(
+              @PathParam("searchBy") String searchBy,
+              @PathParam("searchTerm") String searchTerm ) throws JSONException, SQLException, ClassNotFoundException {
 
-		JSONObject jsonObject = new JSONObject();
-		String username = "Bhanuka";
-		String password = "root";
-		jsonObject.put("username", username); 
-		jsonObject.put("password", password);
+          UserDao ud  = new UserDao();
+          JSONObject jsonObject = ud.search(searchBy,searchTerm);
 
-		//String result = "@Produces(\"application/json\")\n\n" + jsonObject;
-		return "{\"userId\": 1,\"id\": 1,\"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\"body\": \"quia et suscipitsuscipit recusandae consequuntur expedita et cumreprehenderit molestiae ut ut quas totamnostrum rerum est autem sunt rem eveniet architecto\"}";
-	  }
-	  
-	  @Path("getpassword/{username}")
-	  //use the link below to test if this works!
-	  //http://localhost:8080/BatMAP_J2EE_API/userservice/getpassword/bhanuka
-	  @GET
-	  @Produces("application/json")
-	  public JSONObject getPassword(@PathParam("username") String username) throws JSONException {
 
-		JSONObject jsonObject = new JSONObject();
-		String password = "root";
-		jsonObject.put("Password", password); 
 
-		//String result = "@Produces(\"application/json\") \n\n" + jsonObject;
-		return jsonObject;
-	  }
-
-	  @Path("getdetails/{username}")
-	  @GET
-	  @Produces("application/json")
-	  public Response getDetails(@PathParam("username") String username) throws JSONException {
-
-		JSONObject jsonObject = new JSONObject();
-		String userDetails = "details from database";
-		jsonObject.put("userDetails", userDetails); 
-
-		String result = "@Produces(\"application/json\") \n\n" + jsonObject;
-		return Response.status(200).entity(result).build();
+          return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .entity(jsonObject.toString())
+                .build();
 	  }
 
     /**
@@ -214,7 +192,7 @@ public class User {
     @Path("/updateprofile")
     @Consumes("application/json")
     @Produces("application/json")
-    public Response updateProfile(String st) throws SQLException, ClassNotFoundException {
+    public Response updateProfile(String st) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException {
         System.out.println("update profile request received");
         JSONObject jsonReq = new JSONObject(st);
         String password = jsonReq.getString("password");
@@ -334,7 +312,7 @@ public class User {
     @OPTIONS
     @Path("/manageaccount")
     @Consumes("*/*")
-    public Response acceptSignupReqPre(){
+    public Response manageAccountPre(){
         return Response
                 .status(200)
                 .header("Access-Control-Allow-Origin", "*")
