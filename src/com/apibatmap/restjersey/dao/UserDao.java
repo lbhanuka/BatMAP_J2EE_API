@@ -293,6 +293,17 @@ public class UserDao {
             }else if(rs>0){
                 jsonObject.put("deactivated",true);
             }
+        }else if(jsonReq.getString("type").trim().equals("reject")){
+            this.acc_status = "deactivated";
+            String sql = "UPDATE user SET acc_status = ? WHERE email = ? ";
+            String[] params = {acc_status,email};
+            DBConnection updateUsr = new DBConnection();
+            int rs = updateUsr.update(sql, params);
+            if(rs == 0){
+                jsonObject.put("rejected",false);
+            }else if(rs>0){
+                jsonObject.put("rejected",true);
+            }
         }
 
         return jsonObject;
