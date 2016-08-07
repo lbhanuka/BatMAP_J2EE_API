@@ -196,17 +196,11 @@ public class User {
     public Response updateProfile(String st) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException {
         System.out.println("update profile request received");
         JSONObject jsonReq = new JSONObject(st);
-        String password = jsonReq.getString("password");
-        String confpassword = jsonReq.getString("confirmpassword");
-        JSONObject jsonObject;
-        if(password.trim().equals(confpassword.trim())){
-            UserDao ud = new UserDao();
-            jsonObject = ud.updateProfile(jsonReq);
-        }else {
-            jsonObject = new JSONObject();
-            jsonObject.put("passwordNtEquals",true);
-            jsonObject.put("updated",false);
-        }
+
+        UserDao ud = new UserDao();
+        JSONObject jsonObject = ud.updateProfile(jsonReq);
+
+
         return Response
                 .status(200)
                 .header("Access-Control-Allow-Origin", "*")
@@ -397,6 +391,40 @@ public class User {
     @Path("/forgotpasssteptwo")
     @Consumes("*/*")
     public Response forgotPassStepTwoPre(){
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, authorization, Content-Type, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5,  Date, X-Api-Version, X-File-Name")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .build();
+    }
+
+    @POST
+    @Path("/changepassword")
+    @Consumes("application/json")
+    @Produces("application/json")
+    public Response changePassword(String st) throws MessagingException, SQLException, ClassNotFoundException, NoSuchAlgorithmException {
+        JSONObject jsonReq = new JSONObject(st);
+        UserDao ud = new UserDao();
+        JSONObject jsonObject = ud.changePassword(jsonReq);
+
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .entity(jsonObject.toString())
+                .build();
+    }
+
+    @OPTIONS
+    @Path("/changepassword")
+    @Consumes("*/*")
+    public Response changePasswordPre(){
         return Response
                 .status(200)
                 .header("Access-Control-Allow-Origin", "*")

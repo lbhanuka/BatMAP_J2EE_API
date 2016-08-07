@@ -110,7 +110,7 @@ public class UserDao {
         DBConnection logindb = new DBConnection();
         String sql2 = "SELECT * FROM user WHERE email = ? AND password = ?";
         String[] parms = {email,hashedPass};
-        ResultSet rs = logindb.query(sql2,parms);
+        ResultSet rs = logindb.query(sql2, parms);
         if(rs.next()){
             jsonObject.put("email",rs.getString("email"));
             jsonObject.put("user_type",rs.getString("user_type"));
@@ -183,13 +183,13 @@ public class UserDao {
      */
     public JSONObject updateProfile(JSONObject jsonReq) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException {
         this.email = jsonReq.getString("email");
-        this.password = hashPassword(jsonReq.getString("password"));
+//        this.password = hashPassword(jsonReq.getString("password"));
         this.first_name = jsonReq.getString("first_name");
         this.last_name = jsonReq.getString("last_name");
         this.institute = jsonReq.getString("institute");
 
-        String sql = "UPDATE user SET password = ?, first_name = ?, last_name = ?, institute = ? WHERE email = ? ";
-        String[] params = {password,first_name,last_name,institute,email};
+        String sql = "UPDATE user SET first_name = ?, last_name = ?, institute = ? WHERE email = ? ";
+        String[] params = {first_name,last_name,institute,email};
         DBConnection updateUsr = new DBConnection();
         JSONObject jsonObject = new JSONObject();
         int rs = updateUsr.update(sql, params);
@@ -445,6 +445,30 @@ public class UserDao {
         return flag;
     }
 
+    public JSONObject changePassword(JSONObject jsonReq) throws NoSuchAlgorithmException, SQLException, ClassNotFoundException {
+        JSONObject jsonObject = new JSONObject();
+        Boolean exist = this.isValidUser(jsonReq.getString("email"), hashPassword(jsonReq.getString("currentpassword")));
+        if(exist){
+            if(jsonReq.getString("newpassword").trim().equals(jsonReq.getString("confirmpassword").trim())){
+                this.password = hashPassword(jsonReq.getString("newpassword"));
+                this.email = jsonReq.getString("email");
+                String sql = "UPDATE user SET password = ? WHERE email = ? ";
+                String[] params = {this.password,this.email};
+                DBConnection db = new DBConnection();
+                int i = db.update(sql,params);
+                if(i>0){
+                    jsonObject.put("flag",true);
+                }else{
+                    jsonObject.put("flag",false);
+                }
+            }else {
+                jsonObject.put("passwordNtEquals",true);
+            }
+        }else{
+            jsonObject.put("flag",false);
+        }
+        return jsonObject;
+    }
 
     /**
      * getters and setters
