@@ -1,5 +1,6 @@
 package com.apibatmap.restjersey;
 
+import javax.mail.MessagingException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
@@ -63,7 +64,7 @@ public class User {
 
           String sql = "SELECT * FROM user WHERE email = ?";
           String [] parms = {email};
-          ResultSet rs = mydb.query(sql,parms);
+          ResultSet rs = mydb.query(sql, parms);
           if(rs.next()){
               String first_name = rs.getString("first_name");
               String last_name = rs.getString("last_name");
@@ -323,31 +324,28 @@ public class User {
                 .build();
     }
 
-
-    /**
-     * -------------------------------------------------------------------
-     */
-
     @POST
-    @Path("/delete")
-    @Consumes("application/x-www-form-urlencoded")
-    @Produces("application/json")
-    public void deleteUser(){
-
-    }
-
-    @POST
-    @Path("/post")
+    @Path("/forgotpassstepone")
     @Consumes("application/json")
     @Produces("application/json")
-    public Response test(String st) {
-
-        JSONObject jsonreq = new JSONObject(st);
+    public Response forgotPassStepOne(String st) throws MessagingException, SQLException, ClassNotFoundException {
+        JSONObject jsonReq = new JSONObject(st);
         JSONObject jsonObject = new JSONObject();
-        System.out.println("accessed");
-        jsonObject.put("access", "ok");
-        jsonObject.put("namefromreq", jsonreq.getString("name"));
-        jsonObject.put("pwfromreq", jsonreq.getInt("password"));
+
+        UserDao ud = new UserDao();
+        boolean flag = ud.forgotPassStepOne(jsonReq);
+        if(flag){
+            jsonObject.put("flag",true);
+            boolean se = ud.forgotpassEmail();
+            if(se){
+                jsonObject.put("se",true);
+            }else {
+                jsonObject.put("se",false);
+            }
+        }else{
+            jsonObject.put("flag",false);
+        }
+
 
 
         return Response
@@ -359,13 +357,12 @@ public class User {
                 .header("Access-Control-Max-Age", "1209600")
                 .entity(jsonObject.toString())
                 .build();
-
     }
 
     @OPTIONS
-    @Path("/post")
+    @Path("/forgotpassstepone")
     @Consumes("*/*")
-    public Response responseForPreflight(){
+    public Response forgotPassStepOnePre(){
         return Response
                 .status(200)
                 .header("Access-Control-Allow-Origin", "*")
@@ -376,5 +373,38 @@ public class User {
                 .build();
     }
 
+    @POST
+    @Path("/forgotpasssteptwo")
+    @Consumes("application/json")
+    @Produces("application/json")
+    public Response forgotPassStepTwo(String st) throws MessagingException, SQLException, ClassNotFoundException, NoSuchAlgorithmException {
+        JSONObject jsonReq = new JSONObject(st);
+        UserDao ud = new UserDao();
+        JSONObject jsonObject = ud.forgotPassStepTwo(jsonReq);
+
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .entity(jsonObject.toString())
+                .build();
+    }
+
+    @OPTIONS
+    @Path("/forgotpasssteptwo")
+    @Consumes("*/*")
+    public Response forgotPassStepTwoPre(){
+        return Response
+                .status(200)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, authorization, Content-Type, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5,  Date, X-Api-Version, X-File-Name")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600")
+                .build();
+    }
 
 }

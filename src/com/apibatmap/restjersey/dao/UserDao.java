@@ -4,15 +4,13 @@ import com.apibatmap.restjersey.DBConnection;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.mail.MessagingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by lahiru on 6/15/2016.
@@ -42,12 +40,36 @@ public class UserDao {
         this.acc_status = null;
     }
 
-    public void getAllDetailsByEmail(String email) throws SQLException, ClassNotFoundException {
+    public boolean isValidUser(String email,String token) throws SQLException, ClassNotFoundException {
+        boolean flag = false;
+        String sql = "SELECT * FROM user WHERE email = ? AND password = ?";
+        String[] params = {email,token};
+        DBConnection db = new DBConnection();
+        ResultSet rs = db.query(sql, params);
+        if(rs.next()){
+            flag = true;
+        }
+        return flag;
+    }
+
+    public String generateToken() throws NoSuchAlgorithmException {
+        String token;
+        Random rn = new Random();
+        int rand = rn.nextInt(100000 - 1000 + 1) + 10000;
+        token = this.hashPassword(Integer.toString(rand));
+        return token;
+    }
+
+
+
+    public boolean getAllDetailsByEmail(String email) throws SQLException, ClassNotFoundException {
+        Boolean flag = false;
         String sql = "SELECT * FROM user WHERE email = ?";
         String[] params = {email};
         DBConnection getAllDB = new DBConnection();
         ResultSet rs = getAllDB.query(sql, params);
         if(rs.next()){
+            flag = true;
             this.user_id = rs.getString("user_id");
             this.email = email;
             this.password = rs.getString("password");
@@ -57,13 +79,9 @@ public class UserDao {
             this.user_type = rs.getString("user_type");
             this.acc_status = rs.getString("acc_status");
         }
-    }
-
-    public boolean isValidUser(String email,String salt){
-        boolean flag = false;
-
         return flag;
     }
+
 
     private String hashPassword(String password) throws NoSuchAlgorithmException {
 
@@ -358,6 +376,62 @@ public class UserDao {
             jsonObject.put("AccountList",AccountsList);
         }
         return jsonObject;
+    }
+
+    public boolean forgotPassStepOne(JSONObject jsonReq) throws SQLException, ClassNotFoundException {
+        Boolean flag = false;
+        this.email = jsonReq.getString("email");
+        flag  = this.getAllDetailsByEmail(this.email);
+        return flag;
+    }
+
+    public JSONObject forgotPassStepTwo(JSONObject jsonReq) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException, MessagingException {
+
+        JSONObject jsonObject  = new JSONObject();
+        this.email = jsonReq.getString("email");
+        this.password = jsonReq.getString("token");
+        String usrpw = jsonReq.getString("password");
+        String usrcpw = jsonReq.getString("confirmPassword");
+        Boolean f1 = this.isValidUser(this.email, this.password);
+        if(f1 && usrpw.trim().equals(usrcpw.trim())){
+            this.password = hashPassword(usrpw);
+            String sql = "UPDATE user SET password = ? WHERE email = ? ";
+            String[] params = {this.password,this.email};
+            DBConnection db = new DBConnection();
+            int i = db.update(sql,params);
+            if(i>0){
+                jsonObject.put("auth",true);
+                jsonObject.put("flag",true);
+                JSONObject jsonEmail = new JSONObject();
+                jsonEmail.put("recipient",this.email);
+                jsonEmail.put("subject", "Password Change");
+                jsonEmail.put("body","Your password changed successfully.");
+                EmailDao ed = new EmailDao(jsonEmail);
+                if(ed.sendMail()){
+                    jsonObject.put("email",true);
+                }else {
+                    jsonObject.put("email",false);
+                }
+            }else {
+                jsonObject.put("auth",true);
+                jsonObject.put("flag",false);
+            }
+        }else {
+            jsonObject.put("auth",false);
+        }
+        return jsonObject;
+    }
+
+    public boolean forgotpassEmail() throws MessagingException {
+//        String link = "www.batmap.mv.ht/index.html/forgotpassword/"+this.email+"/"+this.password;
+        String link = "http://localhost:63342/BatWeb/index.html#/forgotpassword/"+this.email+"/"+this.password;
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("recipient",this.email);
+        jsonObject.put("subject","Forgot Password");
+        jsonObject.put("body","If you want to change your current password, Please go to this <a href='"+link+"'><strong>LINK</strong><a> <br>or If you don't want to change, Please <strong>ignore</strong> this email.");
+        EmailDao ed = new EmailDao(jsonObject);
+        Boolean flag  = ed.sendMail();
+        return flag;
     }
 
 
