@@ -16,12 +16,12 @@ import java.sql.SQLException;
 @Path("/researchservice")
 public class Research {
 
-	@Path("search/{searchString}")
+	@Path("/search/{searchTerm}")
 	@GET
 	@Produces("application/json")
-	public static Response getFivePosts(@PathParam("searchString") String searchString) throws JSONException {
-		JSONObject jsonObject = new JSONObject();
-
+	public Response searchResearch(@PathParam("searchTerm") String searchTerm) throws JSONException, SQLException, ClassNotFoundException {
+		ResearchDao rd = new ResearchDao();
+		JSONObject jsonObject = rd.searchResearch(searchTerm);
 		return Response
 				.status(200)
 				.header("Access-Control-Allow-Origin", "*")
@@ -44,7 +44,7 @@ public class Research {
 	@Path("research/{research_id}")
 	@GET
 	@Produces("application/json")
-	public static Response getResearchById(@PathParam("research_id") String research_id) throws JSONException, SQLException, ClassNotFoundException {
+	public Response getResearchById(@PathParam("research_id") String research_id) throws JSONException, SQLException, ClassNotFoundException {
         ResearchDao rd = new ResearchDao();
 		JSONObject jsonObject = rd.getResearchById(research_id);
 		return Response

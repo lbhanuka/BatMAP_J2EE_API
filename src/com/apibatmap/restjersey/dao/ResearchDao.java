@@ -143,7 +143,7 @@ public class ResearchDao {
         DBConnection rDB = new DBConnection();
         String sql = "INSERT INTO research_comment(research_id,user_id,content) VALUES (?,?,?)";
         String[] params = {research_id,user_id,content};
-        int rs = rDB.insert(sql,params);
+        int rs = rDB.insert(sql, params);
         if(rs>0){
             flag = true;
         }
@@ -170,6 +170,44 @@ public class ResearchDao {
         String[] parms2 = {(file_name+".pdf"),file_name};
         flag = db.update(sql2, parms2);
         return flag;
+    }
+
+    public JSONObject searchResearch(String searchTerm) throws SQLException, ClassNotFoundException {
+        JSONObject jsonObject = new JSONObject();
+        DBConnection searchDB = new DBConnection();
+        System.out.println(searchTerm);
+        String sql = "SELECT * FROM research INNER JOIN user ON research.user_id = user.user_id WHERE title LIKE ?";
+        String[] params = {searchTerm};
+        ResultSet rs =  searchDB.likeQuery(sql, params);
+        JSONArray searchResearchList = new JSONArray();
+        while (rs.next()) {
+            JSONObject row = new JSONObject();
+            row.put("research_id", rs.getString("research_id"));
+            row.put("user_email",rs.getString("email"));
+            row.put("title",rs.getString("title"));
+            row.put("description",rs.getString("description"));
+            row.put("created_date",rs.getDate("time"));
+            row.put("created_time",rs.getTime("time"));
+            row.put("updated",rs.getString("updated"));
+            row.put("last_update",rs.getString("last_update"));
+            searchResearchList.put(row);
+        }
+        jsonObject.put("searchResearchList",searchResearchList);
+        return jsonObject;
+    }
+
+    public boolean addKeywordsByResearch(String research_id, String keyword){
+        boolean flag = false;
+
+        return flag;
+    }
+
+    public JSONObject searchResearchByKeywords(String keyword){
+        JSONObject jsonObject = new JSONObject();
+
+
+
+        return jsonObject;
     }
 
 }
